@@ -1,0 +1,24 @@
+<!doctype html><html lang=zh-CN><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Linux 安装 Golang - 星河</title>
+<meta property="og:title" content="Linux 安装 Golang - 星河"><meta name=twitter:card content="summary"><meta property="description" content="使用yum或apt-get命令安装，版本不好控制，使用源码安装
+[&mldr;] 查看https://studygolang.com/dl所需安装版本的地址 [&mldr;] 下载
+"><meta property="og:description" content="使用yum或apt-get命令安装，版本不好控制，使用源码安装
+[&mldr;] 查看https://studygolang.com/dl所需安装版本的地址 [&mldr;] 下载
+"><meta name=twitter:image content="https://z3.ax1x.com/2021/06/10/2RP9Ug.png"><link rel=stylesheet href=//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/fonts.css><link rel=stylesheet href=/css/diary.css></head><body class=post><header class=masthead><h1><a href=/>星河</a></h1><p class=tagline>醉后不知天在水，满船清梦压星河</p><nav class=menu><input id=menu-check type=checkbox hidden>
+<label id=menu-label for=menu-check class=unselectable hidden><span class="icon close-icon">✕</span>
+<span class="icon open-icon">☰</span>
+<span class=text>Menu</span></label><ul><li><a href=/>首页</a></li><li><a href=/shuoshuo>说说</a></li><li><a href=/categories/>分类</a></li><li><a href=/tags/>标签</a></li><li><a href=/about/>关于</a></li></ul></nav></header><article class=main><header class=title><h1>Linux 安装 Golang</h1><h3>mingzaily
+/
+2021-06-09</h3><hr></header><h3 id=场景>场景</h3><p>使用<code>yum</code>或<code>apt-get</code>命令安装，版本不好控制，使用源码安装</p><h3 id=源码安装>源码安装</h3><ul><li><p>查看<code>https://studygolang.com/dl</code>所需安装版本的地址
+<a href=https://imgtu.com/i/2RP9Ug><img src=https://z3.ax1x.com/2021/06/10/2RP9Ug.png alt=2RP9Ug.png></a></p></li><li><p>下载</p></li></ul><pre><code class=language-shell>wget https://studygolang.com/dl/golang/go1.15.13.linux-amd64.tar.gz
+</code></pre><ul><li>解压</li></ul><pre><code class=language-shell>tar -zxvf go1.15.13.linux-amd64.tar.gz
+</code></pre><ul><li>移动</li></ul><pre><code class=language-shell>mv go /usr/local/go
+</code></pre><ul><li>添加环境变量</li></ul><pre><code class=language-shell># 打开
+vim /etc/profile
+# 添加
+export GOROOT=/usr/local/go
+export PATH=$PATH:$GOROOT/bin
+# 运行
+source /etc/profile
+</code></pre><ul><li>安装完成</li></ul><pre><code class=language-shell># 查看安装的go版本，校验通过，安装成功
+go version
+</code></pre><footer><script src=//cdn.jsdelivr.net/combine/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js,npm/@xiee/utils/js/load-highlight.js defer></script><hr><div class=copyright>© <a href=https://mingzaily.com>mingzaily</a> 2019-2024 | <a href=https://github.com/mingzaily>Github</a></div></footer></article></body></html>

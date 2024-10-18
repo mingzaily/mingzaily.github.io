@@ -1,0 +1,18 @@
+<!doctype html><html lang=zh-CN><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>关于敏感数据加密的设计 - 星河</title>
+<meta property="og:title" content="关于敏感数据加密的设计 - 星河"><meta name=twitter:card content="summary"><meta property="description" content="查询用 hash ，使用用加密。
+[&mldr;] cellphone_enc, cellphone_hash, id_enc,id_hash. 如果还要查询归属地的，再加一个 phone_meta 里面只存前 7 位即可
+[&mldr;] 加密后如何查询才能击中索引；
+[&mldr;] 使用 hash 查询。 加密字段只允许精准查询，不允许模糊。 如果一定要模糊，那也是有限制的模糊， &amp;hellip;"><meta property="og:description" content="查询用 hash ，使用用加密。
+[&mldr;] cellphone_enc, cellphone_hash, id_enc,id_hash. 如果还要查询归属地的，再加一个 phone_meta 里面只存前 7 位即可
+[&mldr;] 加密后如何查询才能击中索引；
+[&mldr;] 使用 hash 查询。 加密字段只允许精准查询，不允许模糊。 如果一定要模糊，那也是有限制的模糊， &amp;hellip;"><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/fonts.css><link rel=stylesheet href=/css/diary.css></head><body class=post><header class=masthead><h1><a href=/>星河</a></h1><p class=tagline>醉后不知天在水，满船清梦压星河</p><nav class=menu><input id=menu-check type=checkbox hidden>
+<label id=menu-label for=menu-check class=unselectable hidden><span class="icon close-icon">✕</span>
+<span class="icon open-icon">☰</span>
+<span class=text>Menu</span></label><ul><li><a href=/>首页</a></li><li><a href=/shuoshuo>说说</a></li><li><a href=/categories/>分类</a></li><li><a href=/tags/>标签</a></li><li><a href=/about/>关于</a></li></ul></nav></header><article class=main><header class=title><h1>关于敏感数据加密的设计</h1><h3>mingzaily
+/
+2023-08-31</h3><hr></header><ol><li><p>查询用 hash ，使用用加密。</p><blockquote><p>cellphone_enc, cellphone_hash, id_enc,id_hash. 如果还要查询归属地的，再加一个 phone_meta 里面只存前 7 位即可</p></blockquote></li><li><p>加密后如何查询才能击中索引；</p><blockquote><p>使用 hash 查询。
+加密字段只允许精准查询，不允许模糊。
+如果一定要模糊，那也是有限制的模糊，提前定好模糊规则，根据模糊规则提前预留相关数据，再进行加密。</p></blockquote></li><li><p>用户身份如何验证（手机号、身份证）；</p><blockquote><p>验证后再加密，或者允许解密。</p></blockquote></li></ol><hr><p>所以你需要</p><ol><li>一个专用于加密解密的服务。
+所有加密解密都访问该服务。
+可访问数据库的人，秘钥管理人，加密服务管理人，这三方不能有任何一方有办法获取到所有要素。</li><li>调用解密必须有日志。</li></ol><p>注意：</p><ol><li>不同业务场景对脱敏的要求是不一样的。我们公司的要求是，任何人任何时候都不能看到明文，明文只出现在内存中。
+有时候，脱敏并不是要求看不到明文，而是要求 不要让人在看到 1 条明文时，再看到与之相关的其他明文，进而推测出业务信息，例如同时看到姓名与手机号。当然，这与你们公司的具体场景有关。</li><li>解密后，明文在内存中，如果被 log ，一直面临风险，所以需要对日志进行审核。</li><li>现在有些数据库或者数据库中间件支持字段脱敏。你可以参考他们的方案。</li></ol><footer><hr><div class=copyright>© <a href=https://mingzaily.com>mingzaily</a> 2019-2024 | <a href=https://github.com/mingzaily>Github</a></div></footer></article></body></html>

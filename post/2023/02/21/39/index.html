@@ -1,0 +1,244 @@
+<!doctype html><html lang=zh-CN><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Golang 简易WS服务 - 服务端 - 星河</title>
+<meta property="og:title" content="Golang 简易WS服务 - 服务端 - 星河"><meta name=twitter:card content="summary"><meta property="description" content='维护socket连接，保存客户端信息
+[&mldr;] package contorller import ( "encoding/json" "fmt" "git.myscrm.cn/vr/server-yk-app-builder/model" &amp;hellip;'><meta property="og:description" content='维护socket连接，保存客户端信息
+[&mldr;] package contorller import ( "encoding/json" "fmt" "git.myscrm.cn/vr/server-yk-app-builder/model" &amp;hellip;'><link rel=stylesheet href=//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/fonts.css><link rel=stylesheet href=/css/diary.css></head><body class=post><header class=masthead><h1><a href=/>星河</a></h1><p class=tagline>醉后不知天在水，满船清梦压星河</p><nav class=menu><input id=menu-check type=checkbox hidden>
+<label id=menu-label for=menu-check class=unselectable hidden><span class="icon close-icon">✕</span>
+<span class="icon open-icon">☰</span>
+<span class=text>Menu</span></label><ul><li><a href=/>首页</a></li><li><a href=/shuoshuo>说说</a></li><li><a href=/categories/>分类</a></li><li><a href=/tags/>标签</a></li><li><a href=/about/>关于</a></li></ul></nav></header><article class=main><header class=title><h1>Golang 简易WS服务 - 服务端</h1><h3>mingzaily
+/
+2023-02-21</h3><hr></header><h2 id=本次开发主要使用了gorilla-websocket软件包>本次开发主要使用了Gorilla Websocket软件包</h2><h3 id=客户端结构体>客户端结构体</h3><p>维护socket连接，保存客户端信息</p><h4 id=代码>代码</h4><pre><code class=language-golang>package contorller
+
+import (
+	&quot;encoding/json&quot;
+	&quot;fmt&quot;
+	&quot;git.myscrm.cn/vr/server-yk-app-builder/model&quot;
+	&quot;git.myscrm.cn/vr/server-yk-app-builder/pkg/enum&quot;
+	&quot;git.myscrm.cn/vr/server-yk-app-builder/pkg/logger&quot;
+	&quot;git.myscrm.cn/vr/server-yk-app-builder/pkg/response&quot;
+	&quot;github.com/gorilla/websocket&quot;
+	&quot;strconv&quot;
+	&quot;time&quot;
+)
+
+const (
+	// pingWait is the maximum time in seconds to wait for a ping from
+	pingWait = 20 * time.Second
+	// Maximum message size allowed from peer.
+	maxMessageSize = 512
+)
+
+type wsClient struct {
+	manager  *wsManager
+	id       string
+	desc     string
+	conn     *websocket.Conn
+	status   enum.ClientStatus
+	send     chan []byte
+	isClosed chan bool
+	lastPing time.Time
+}
+
+func newWsClient(manager *wsManager, conn *websocket.Conn, id, name, ip string) *wsClient {
+	return &amp;wsClient{
+		manager:  manager,
+		id:       id,
+		desc:     fmt.Sprintf(&quot;客户端(%s, %s)&quot;, name, ip),
+		conn:     conn,
+		status:   enum.ClientStatusOffline,
+		send:     make(chan []byte),
+		isClosed: make(chan bool),
+		lastPing: time.Now(),
+	}
+}
+
+// Read 读取客户端发送过来的消息
+func (c *wsClient) Read() {
+	defer func() {
+		c.unRegister()
+		logger.Info(c.desc, &quot;read协程退出&quot;)
+	}()
+
+	c.conn.SetReadLimit(maxMessageSize)
+	c.conn.SetPingHandler(func(text string) error {
+		// 只需要知道客户端还活着就行，不需要回复
+		c.lastPing = time.Now()
+		// 更新客户端状态
+		clientStatus, _ := strconv.ParseInt(text, 10, 32)
+		c.status = enum.ClientStatus(int32(clientStatus))
+		return nil
+	})
+
+	for {
+		msgType, data, err := c.conn.ReadMessage()
+		if err != nil {
+			logger.Error(c.desc, &quot;c.conn.ReadMessage&quot;, err.Error())
+			break
+		}
+
+		switch msgType {
+		case websocket.TextMessage:
+			var msg *model.WsMessage
+			err = json.Unmarshal(data, &amp;msg)
+			if err != nil {
+				logger.Error(c.desc, &quot;json.Unmarshal&quot;, err.Error())
+				break
+			}
+
+			switch msg.Type {
+			default:
+				logger.Info(c.desc, &quot;未知消息类型&quot;, string(data))
+				c.send &lt;- data
+			}
+		}
+	}
+}
+
+// Write 把对应消息写回客户端
+func (c *wsClient) Write() {
+	defer func() {
+		logger.Info(c.desc, &quot;write协程退出&quot;)
+		c.unRegister()
+	}()
+	for {
+		select {
+		case &lt;-c.isClosed:
+			return
+		case msg := &lt;-c.send:
+			err := c.conn.WriteMessage(websocket.TextMessage, msg)
+			if err != nil {
+				logger.Error(c.desc, &quot;c.conn.WriteMessage&quot;, err.Error())
+				return
+			}
+		}
+	}
+}
+
+// Check 检测客户端是否超时
+func (c *wsClient) Check() {
+	defer func() {
+		logger.Info(c.desc, &quot;check协程退出&quot;)
+	}()
+	ticker := time.NewTicker(pingWait / 6)
+	for {
+		select {
+		case &lt;-c.isClosed:
+			return
+		case &lt;-ticker.C:
+			// 主动关闭连接
+			if time.Now().Sub(c.lastPing) &gt; pingWait {
+				response.WsReturnErr(c.conn, enum.WsDataErr, &quot;客户端超时，主动关闭连接&quot;)
+				logger.Info(c.desc, &quot;客户端超时，主动关闭连接&quot;)
+				return
+			}
+		}
+	}
+}
+
+func (c *wsClient) unRegister() {
+	if c.manager.clients[c.id] != nil {
+		c.manager.unRegister &lt;- c
+	}
+}
+
+</code></pre><h4 id=使用>使用</h4><p>应当在控制器/入口处</p><pre><code class=language-golang>func (c *cSocket) Ws(ctx *gin.Context) {
+	ws, err := c.upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
+	if err != nil {
+		return nil, &quot;&quot;, err
+	}
+
+	ip := ctx.ClientIP()
+	name := ctx.GetString(&quot;device_name&quot;)
+
+	client := newWsClient(WsManager, ws, clientId, name, ip)
+	client.manager.register &lt;- client
+
+	go client.Read()
+	go client.Write()
+	go client.Check()
+}
+</code></pre><h3 id=客户端管理器>客户端管理器</h3><p>管理客户端，支持登录、注销、广播</p><h4 id=代码-1>代码</h4><pre><code class=language-golang>package contorller
+
+import (
+	&quot;encoding/json&quot;
+	&quot;git.myscrm.cn/vr/server-yk-app-builder/model&quot;
+	&quot;git.myscrm.cn/vr/server-yk-app-builder/pkg/enum&quot;
+	&quot;git.myscrm.cn/vr/server-yk-app-builder/pkg/logger&quot;
+)
+
+var WsManager = NewWsManager()
+
+type wsManager struct {
+	clients    map[string]*wsClient // 记录在线用户
+	broadcast  chan []byte          // 触发消息广播
+	register   chan *wsClient       // 触发设备或用户登陆
+	unRegister chan *wsClient       // 触发设备或用户退出
+}
+
+func NewWsManager() *wsManager {
+	return &amp;wsManager{
+		clients:    make(map[string]*wsClient),
+		broadcast:  make(chan []byte),
+		register:   make(chan *wsClient),
+		unRegister: make(chan *wsClient),
+	}
+}
+
+func (m *wsManager) Start() {
+	for {
+		select {
+		case conn := &lt;-m.register:
+			m.clients[conn.id] = conn
+			conn.status = enum.ClientStatusOnline
+			logger.Info(conn.desc, &quot;已连接&quot;, &quot;当前在线客户端&quot;, len(m.clients))
+			data, _ := json.Marshal(&amp;model.WsMessage{Type: enum.WsDataNotify, Data: &quot;socket 初始化成功&quot;})
+			conn.send &lt;- data
+		}
+	}
+}
+
+func (m *wsManager) BoardCast() {
+	for {
+		select {
+		case message := &lt;-m.broadcast:
+			for _, conn := range m.clients {
+				conn.send &lt;- message
+			}
+		}
+	}
+}
+
+func (m *wsManager) Quit() {
+	for {
+		select {
+		case conn := &lt;-m.unRegister:
+			if _, ok := m.clients[conn.id]; ok {
+				delete(m.clients, conn.id)
+				conn.conn.Close()
+				conn.status = enum.ClientStatusOffline
+				close(conn.isClosed)
+			}
+		}
+	}
+}
+
+func (m *wsManager) GetClient(id string) *wsClient {
+	if client, ok := m.clients[id]; ok {
+		return client
+	}
+	return nil
+}
+</code></pre><h4 id=使用-1>使用</h4><p>一般为main.go或启动处</p><pre><code class=language-golang>func RegisterHttpRoute(serverMux *gin.Engine) error {
+	go contorller.WsManager.Start()
+	go contorller.WsManager.Quit()
+
+	// 设置恐慌恢复，错误处理
+	serverMux.Use(middleware.PanicHandler(), middleware.ErrorHandler())
+	serverMux.NoMethod(middleware.NotFoundHandler())
+	serverMux.NoRoute(middleware.NotFoundHandler())
+
+	// 注册 websocket 接口
+	serverMux.GET(&quot;/socket&quot;, middleware.SocketAuth(), contorller.Socket.Ws)
+
+	...
+}
+</code></pre><footer><script src=//cdn.jsdelivr.net/combine/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js,npm/@xiee/utils/js/load-highlight.js defer></script><hr><div class=copyright>© <a href=https://mingzaily.com>mingzaily</a> 2019-2024 | <a href=https://github.com/mingzaily>Github</a></div></footer></article></body></html>

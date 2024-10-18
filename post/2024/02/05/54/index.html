@@ -1,0 +1,53 @@
+<!doctype html><html lang=zh-CN><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Mac 配置 zsh - 星河</title>
+<meta property="og:title" content="Mac 配置 zsh - 星河"><meta name=twitter:card content="summary"><meta property="description" content='从 macOS Catalina 版开始，您的 Mac 将使用 zsh 作为默认登录 Shell 和交互式 Shell。您还可以在较低版本的 macOS 中将 zsh 设置为默认 Shell。
+chsh -s /bin/zsh 参看：在 Mac 上将 zsh 用作默认 Shell
+[&mldr;] sh -c "$(curl -fsSL &amp;hellip;'><meta property="og:description" content='从 macOS Catalina 版开始，您的 Mac 将使用 zsh 作为默认登录 Shell 和交互式 Shell。您还可以在较低版本的 macOS 中将 zsh 设置为默认 Shell。
+chsh -s /bin/zsh 参看：在 Mac 上将 zsh 用作默认 Shell
+[&mldr;] sh -c "$(curl -fsSL &amp;hellip;'><meta name=twitter:image content="https://mimosa-pudica.net/img/zsh.gif"><link rel=stylesheet href=//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/fonts.css><link rel=stylesheet href=/css/diary.css></head><body class=post><header class=masthead><h1><a href=/>星河</a></h1><p class=tagline>醉后不知天在水，满船清梦压星河</p><nav class=menu><input id=menu-check type=checkbox hidden>
+<label id=menu-label for=menu-check class=unselectable hidden><span class="icon close-icon">✕</span>
+<span class="icon open-icon">☰</span>
+<span class=text>Menu</span></label><ul><li><a href=/>首页</a></li><li><a href=/shuoshuo>说说</a></li><li><a href=/categories/>分类</a></li><li><a href=/tags/>标签</a></li><li><a href=/about/>关于</a></li></ul></nav></header><article class=main><header class=title><h1>Mac 配置 zsh</h1><h3>mingzaily
+/
+2024-02-05</h3><hr></header><h2 id=1-使用-zsh-作为默认-shell>1. 使用 zsh 作为默认 shell</h2><p>从 macOS Catalina 版开始，您的 Mac 将使用 zsh 作为默认登录 Shell 和交互式 Shell。您还可以在较低版本的 macOS 中将 zsh 设置为默认 Shell。</p><pre><code class=language-bash>chsh -s /bin/zsh
+</code></pre><p>参看：<a href=https://support.apple.com/zh-cn/HT208050>在 Mac 上将 zsh 用作默认 Shell</a></p><h2 id=2-安装-oh-my-zsh>2. 安装 oh-my-zsh</h2><h3 id=自动安装>自动安装</h3><pre><code class=language-bash>sh -c &quot;$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)&quot;
+</code></pre><p>也可以手动安装：</p><h3 id=手动安装>手动安装</h3><p>下载 oh-my-zsh</p><pre><code class=language-bash>git clone --depth=1 https://github.com/ohmyzsh/ohmyzsh.git ~/.oh-my-zsh
+</code></pre><p>备份原有 ~/.zshrc（如果有）</p><pre><code class=language-bash>cp ~/.zshrc ~/.zshrc.bak
+</code></pre><p>从模板创建 zsh 配置文件</p><pre><code>cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc
+</code></pre><h2 id=3-更改-zsh-主题>3. 更改 zsh 主题</h2><p>主题样式 <a href=https://github.com/ohmyzsh/ohmyzsh/wiki/Themes>这里</a> 查看。</p><pre><code class=language-bash>vi ~/.zshrc
+# 找到
+ZSH_THEME=&quot;robbyrussell&quot;
+# 例如修改为
+ZSH_THEME=&quot;ys&quot;
+</code></pre><p>注：主题文件在 <code>~/.oh-my-zsh/themes</code> 目录</p><blockquote><p>修改配置后，通过 <code>source ~/.zshrc</code> 或者退出重新登录使配置生效。</p></blockquote><h2 id=4-别名-alias>4. 别名 alias</h2><p>我们看下 git 的别名：</p><pre><code class=language-bash>cat ~/.oh-my-zsh/plugins/git/git.plugin.zsh
+</code></pre><pre><code>......
+
+alias g='git'
+
+alias ga='git add'
+alias gaa='git add --all'
+alias gapa='git add --patch'
+alias gau='git add --update'
+alias gav='git add --verbose'
+alias gap='git apply'
+alias gapt='git apply --3way'
+
+......
+</code></pre><p>自定义别名，在 <code>~/.zshrc</code> 中，最下面直接写即可。</p><pre><code># Example aliases
+# alias zshconfig=&quot;mate ~/.zshrc&quot;
+# alias ohmyzsh=&quot;mate ~/.oh-my-zsh&quot;
+alias ll='ls -lahFT'
+</code></pre><h2 id=5-命令自动补全>5. 命令自动补全</h2><h3 id=内置自动补全功能>内置自动补全功能</h3><p><strong>默认 oh-my-zsh 命令自动补全功能如下</strong>：</p><ul><li><p>自动列出目录</p><p>输入 cd 按 tab 键，目录将自动列出，在按 tab 可以切换</p></li><li><p>自动目录名简写补全</p><p>要访问 <code>/usr/local/bin</code> 这个长路径，只需要 <code>cd /u/l/b</code> 按 tab 键自动补全</p></li><li><p>自动大小写更正 (sysin)</p><p>要访问 Desktop 文件夹，只需要 <code>cd de</code> 按 tab 键自动补全，或者查看 <a href=http://readme.md/>README.md</a>，只需要 <code>cat rea</code> 自动更正补全</p></li><li><p>自动命令补全</p><p>输入 <code>kubectl</code> 按 tab 键即可看到可用命令</p></li><li><p>自动补全命令参数</p><p>输入 <code>kill</code> 按 tab 键会自动显示出进程的 process id</p></li></ul><p><strong>小技巧</strong>：</p><p>可以忽略 <code>cd</code> 命令，输入 <code>..</code> 或者 <code>...</code> 和当前目录名都可以跳转。</p><p>上述功能不需要额外的插件。</p><p>另外还有一些插件来增强命令补全，可根据需要启用：</p><h3 id=zsh-completionshttpsgithubcomzsh-userszsh-completions><a href=https://github.com/zsh-users/zsh-completions>zsh-completions</a></h3><p>额外的自动补全功能，用于补充 zsh 中尚不支持的命令补全，该项目将在完善时合并到 zsh。</p><p>比如 Homebrew 的补全功能：可以解决 brew 及 brew 安装的（部分）指令仍然没有补全功能的问题。</p><ul><li><p>Clone the repository inside your oh-my-zsh repo:</p><pre><code>git clone --depth=1 https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions
+</code></pre></li><li><p>Add it to <code>FPATH</code> in your <code>.zshrc</code> by adding the following line before <code>source "$ZSH/oh-my-zsh.sh"</code>:</p><pre><code>fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
+</code></pre></li></ul><p>Note: adding it as a regular Oh My ZSH! plugin will not work properly (see <a href=https://github.com/zsh-users/zsh-completions/issues/603>#603</a>).</p><h3 id=zsh-autosuggestionshttpsgithubcomzsh-userszsh-autosuggestions><a href=https://github.com/zsh-users/zsh-autosuggestions>zsh-autosuggestions</a></h3><p>作用是根据历史输入命令的记录即时的提示（建议补全），然后按 → 键即可补全。</p><pre><code>git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions.git ${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-autosuggestions
+</code></pre><p>编辑 <code>~/.zshrc</code>，找到 plugins=(git) 这一行，修改为：</p><pre><code>plugins=(
+    git
+    # other plugins...
+    zsh-autosuggestions
+)
+</code></pre><h3 id=incremental-completion-on-zshhttpsmimosa-pudicanetzsh-incrementalhtml><a href=https://mimosa-pudica.net/zsh-incremental.html>Incremental completion on zsh</a></h3><p>增强的实时自动命令补全插件：<a href=https://mimosa-pudica.net/zsh-incremental.html>Incremental completion on zsh</a></p><blockquote><p>该插件对性能似乎有一点点影响，请根据需要启用。</p></blockquote><p>作用如图：</p><p><img src=https://mimosa-pudica.net/img/zsh.gif alt=incr></p><pre><code>mkdir $ZSH_CUSTOM/plugins/incr
+curl -fsSL https://mimosa-pudica.net/src/incr-0.2.zsh -o $ZSH_CUSTOM/plugins/incr/incr.zsh
+echo 'source $ZSH_CUSTOM/plugins/incr/incr.zsh' &gt;&gt; ~/.zshrc
+source ~/.zshrc
+</code></pre><h2 id=6-语法高亮插件>6. 语法高亮插件</h2><p>插件名称：<a href=https://github.com/zsh-users/zsh-syntax-highlighting>zsh-syntax-highlighting</a></p><p>作用：命令错误会显示红色，直到你输入正确才会变绿色，另外路径正确会显示下划线 (sysin)。</p><p>安装：</p><pre><code>git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+</code></pre><p>配置启用插件：</p><p>编辑 <code>~/.zshrc</code>，以下部分添加插件的名字</p><pre><code>plugins=([plugins...] zsh-syntax-highlighting)
+</code></pre><h2 id=7-相关网站>7. 相关网站</h2><ul><li><a href=https://www.zsh.org/>Zsh 官网</a></li><li><a href=https://ohmyz.sh/>oh-my-zsh 官网</a></li><li><a href=https://github.com/ohmyzsh/ohmyzsh>oh-my-zsh github</a></li><li><a href=https://github.com/ohmyzsh/ohmyzsh/wiki/themes>oh-my-zsh 主题样式</a></li><li>[macOS Zsh 使用 oh-my-zsh 打造高效便捷的 shell 环境](<a href=https://sysin.org/blog/macos-zsh/>https://sysin.org/blog/macos-zsh/</a>）</li></ul><footer><script src=//cdn.jsdelivr.net/combine/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js,npm/@xiee/utils/js/load-highlight.js defer></script><hr><div class=copyright>© <a href=https://mingzaily.com>mingzaily</a> 2019-2024 | <a href=https://github.com/mingzaily>Github</a></div></footer></article></body></html>

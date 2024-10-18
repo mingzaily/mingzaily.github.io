@@ -1,0 +1,71 @@
+<!doctype html><html lang=zh-CN><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Golang AES-128/GCM + BASE64 加密 - 星河</title>
+<meta property="og:title" content="Golang AES-128/GCM + BASE64 加密 - 星河"><meta name=twitter:card content="summary"><meta property="description" content="需求背景：接入网络游戏防沉迷系统，其中请求体body需要进行加密，和签名
+"><meta property="og:description" content="需求背景：接入网络游戏防沉迷系统，其中请求体body需要进行加密，和签名
+"><link rel=stylesheet href=//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/fonts.css><link rel=stylesheet href=/css/diary.css></head><body class=post><header class=masthead><h1><a href=/>星河</a></h1><p class=tagline>醉后不知天在水，满船清梦压星河</p><nav class=menu><input id=menu-check type=checkbox hidden>
+<label id=menu-label for=menu-check class=unselectable hidden><span class="icon close-icon">✕</span>
+<span class="icon open-icon">☰</span>
+<span class=text>Menu</span></label><ul><li><a href=/>首页</a></li><li><a href=/shuoshuo>说说</a></li><li><a href=/categories/>分类</a></li><li><a href=/tags/>标签</a></li><li><a href=/about/>关于</a></li></ul></nav></header><article class=main><header class=title><h1>Golang AES-128/GCM + BASE64 加密</h1><h3>mingzaily
+/
+2021-03-15</h3><hr></header><p>需求背景：接入网络游戏防沉迷系统，其中请求体body需要进行加密，和签名</p><h4 id=加密>加密</h4><pre><code class=language-go>func GCMEncrypt(secretKey, originalText string) (string, error) {
+	// 密钥需要解码
+	key, _ := hex.DecodeString(secretKey)
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return &quot;&quot;, err
+	}
+
+	aesGcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return &quot;&quot;, err
+	}
+	
+	// 向量
+	nonce := make([]byte, aesGcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return &quot;&quot;, err
+	}
+
+	cipherText := aesGcm.Seal(nonce, nonce, []byte(originalText), nil)
+
+	// encode as base64 string
+	encoded := base64.StdEncoding.EncodeToString(cipherText)
+	return encoded, nil
+}
+</code></pre><h4 id=签名>签名</h4><pre><code class=language-go>func (s *encryptService) Sign(headers, body map[string]string) string {
+	var data string
+	var keys []string
+	// key排序
+	for k := range headers {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	// 拼接
+	for _, k := range keys {
+		data = data + k + headers[k]
+	}
+	data = s.appSecret + data + gconv.String(body)
+
+	// 对字符串进行sha256哈希
+	h := sha256.New()
+	h.Write([]byte(data))
+	sum := h.Sum(nil)
+	return hex.EncodeToString(sum)
+}
+</code></pre><h4 id=使用>使用</h4><pre><code class=language-go>// 参数初始化
+headers := map[string]string{
+	&quot;appId&quot;:      &quot;xxxxxxxx&quot;,
+	&quot;bizId&quot;:      &quot;xxxxxxxx&quot;,
+	&quot;timestamps&quot;: strconv.Itoa(int(time.Now().UnixNano() / 1e6)),
+}
+// 请求体加密
+jsonByte, _ := json.Marshal(req)
+cipher, _ := GCMEncrypt(string(jsonByte), 'xxxxxxxxx') // 第二个参数是密钥
+body := map[string]string{
+	&quot;data&quot;: cipher,
+}
+// 生成签名
+headers[&quot;sign&quot;] = Encrypt.Sign(headers, body)
+headers[&quot;Content-Type&quot;] = &quot;application/json&quot;
+.....发http请求
+</code></pre><footer><script src=//cdn.jsdelivr.net/combine/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js,npm/@xiee/utils/js/load-highlight.js defer></script><hr><div class=copyright>© <a href=https://mingzaily.com>mingzaily</a> 2019-2024 | <a href=https://github.com/mingzaily>Github</a></div></footer></article></body></html>

@@ -1,0 +1,271 @@
+<!doctype html><html lang=zh-CN><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>统一管理 Protocol Buffer，API 大仓设计与实现 - 星河</title>
+<meta property="og:title" content="统一管理 Protocol Buffer，API 大仓设计与实现 - 星河"><meta name=twitter:card content="summary"><meta property="description" content="目前公司采用 protocol buffer 作为 IDL，虽然可以根据 API 定义，轻松生成客户端和服务端的代码。但是对于跨项目的接口，会增加项目之间的耦合性。例如 A 服务对外提供了一个接口，B 服务去调用。那么就需要根据 A 服务的 proto 文件，生成客户端代码，并拷贝给 B。如果联调期间，A 服务改动了该接口，还需重复前面的步骤，非常繁琐
+[&mldr;] 常见的几种解决方案，煎 &amp;hellip;"><meta property="og:description" content="目前公司采用 protocol buffer 作为 IDL，虽然可以根据 API 定义，轻松生成客户端和服务端的代码。但是对于跨项目的接口，会增加项目之间的耦合性。例如 A 服务对外提供了一个接口，B 服务去调用。那么就需要根据 A 服务的 proto 文件，生成客户端代码，并拷贝给 B。如果联调期间，A 服务改动了该接口，还需重复前面的步骤，非常繁琐
+[&mldr;] 常见的几种解决方案，煎 &amp;hellip;"><meta name=twitter:image content="https://s21.ax1x.com/2024/05/25/pklP974.png"><link rel=stylesheet href=//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/fonts.css><link rel=stylesheet href=/css/diary.css></head><body class=post><header class=masthead><h1><a href=/>星河</a></h1><p class=tagline>醉后不知天在水，满船清梦压星河</p><nav class=menu><input id=menu-check type=checkbox hidden>
+<label id=menu-label for=menu-check class=unselectable hidden><span class="icon close-icon">✕</span>
+<span class="icon open-icon">☰</span>
+<span class=text>Menu</span></label><ul><li><a href=/>首页</a></li><li><a href=/shuoshuo>说说</a></li><li><a href=/categories/>分类</a></li><li><a href=/tags/>标签</a></li><li><a href=/about/>关于</a></li></ul></nav></header><article class=main><header class=title><h1>统一管理 Protocol Buffer，API 大仓设计与实现</h1><h3>mingzaily
+/
+2024-05-25</h3><hr></header><h2 id=背景>背景</h2><p>目前公司采用 protocol buffer 作为 IDL，虽然可以根据 API 定义，轻松生成客户端和服务端的代码。但是对于跨项目的接口，会增加项目之间的耦合性。例如 A 服务对外提供了一个接口，B 服务去调用。那么就需要根据 A 服务的 proto 文件，生成客户端代码，并拷贝给 B。如果联调期间，A 服务改动了该接口，还需重复前面的步骤，非常繁琐</p><h2 id=方案>方案</h2><p>常见的几种解决方案，煎鱼大佬已经描述得很详细了（<a href=https://mp.weixin.qq.com/s/cBXZjg_R8MLFDJyFtpjVVQ>真是头疼，Proto 代码到底放哪里？</a>）</p><ul><li>方案一：api 大仓 + git submodule（b 站）</li><li>方案二：api 大仓 + git submodule + 每个项目生成代码专有仓库</li><li>方案三：每个项目都有一个 api 仓库，包含生成的代码</li><li>方案四：api 大仓 + api 生成代码的集中仓库</li></ul><p>具体方案的优缺点 yuyy 博主已经写清楚了。
+权衡了下，和博主一样选择方案四。</p><h2 id=具体实现>具体实现</h2><p><a href=https://imgse.com/i/pklP974><img src=https://s21.ax1x.com/2024/05/25/pklP974.png alt=pklP974.png></a></p><h3 id=drone-文件>DRONE 文件</h3><pre><code class=language-shell>$ tree -L 1
+.
+├── Dockerfile
+├── Makefile
+├── README.md
+├── apis-go.gen.yml
+├── apis-go.sh
+├── apis-swagger.gen.yml
+├── apis-swagger.sh
+├── auth-center
+├── budget-center
+├── common
+├── consume-order
+├── consume-quota-center
+├── consume-rule-to-third
+├── datacenter
+├── fino-multi-env-center
+├── finobase
+├── finoconsume
+├── invoice
+├── mng-center
+├── mq-center
+├── notify-center
+├── org-arch-center
+├── org-asset-center
+├── org-order-center
+├── org-recharge-center
+├── org-settle-center
+├── pubsvc
+├── pushcenter
+├── right-recharge
+├── snowflake
+├── task-center
+├── third-consume-order
+└── timer
+
+26 directories, 7 files
+</code></pre><h3 id=droneyaml>.drone.yaml</h3><pre><code class=language-yaml>kind: pipeline
+type: docker
+name: apis
+
+workspace:
+  base: /app
+  path: ${DRONE_REPO_NAME}
+
+steps:
+  - name: 检查proto文件
+    image: reg.xxxx.com/golang/apis-generate-go:1.0.0
+    pull: if-not-exists
+    volumes:
+      - name: buf-cache
+        path: /app/buf/.cache
+    commands:
+      - buf lint
+
+  - name: 编译proto文件
+    image: reg.xxxx.com/golang/apis-generate-go:1.0.0
+    pull: if-not-exists
+    volumes:
+      - name: buf-cache
+        path: /app/buf/.cache
+    environment:
+      BUF_CACHE_DIR: /app/buf/.cache
+      TARGET_REPO: apis-go
+      TARGET_REPO_ADDR: git@gogs.xxxx.com:fino/apis-go.git
+      SSH_PRIVATE_KEY:
+        from_secret: ssh_private_key
+    commands:
+      - sh ./apis-go.sh
+
+  - name: 生成swagger文件
+    image: reg.xxxx.com/golang/apis-generate-go:1.0.0
+    pull: if-not-exists
+    volumes:
+      - name: buf-cache
+        path: /app/buf/.cache
+    environment:
+      BUF_CACHE_DIR: /app/buf/.cache
+      TARGET_REPO: apis-swagger
+      TARGET_REPO_ADDR: git@gogs.xxxx.com:fino/apis-swagger.git
+      SSH_PRIVATE_KEY:
+        from_secret: ssh_private_key
+    commands:
+      - sh ./apis-swagger.sh
+
+  - name: 通知
+    image: plugins/webhook
+    pull: if-not-exists
+    settings:
+      urls: https://oapi.dingtalk.com/robot/send?access_token=xxxx
+      content_type: application/json
+      template: |
+        {
+            &quot;msgtype&quot;: &quot;text&quot;,
+            &quot;text&quot;: {
+                &quot;content&quot;: &quot;Proto \n &gt; 构建结果: {{ build.status }} \n &gt; 代码分支: {{ build.branch }} \n &gt; 编译详情: {{ build.link }} \n &gt; 提交信息: {{ build.message }} \n &gt; 提交发起: {{ build.author }} &quot;
+            }
+        }
+
+volumes: # 定义流水线挂载目录，用于共享数据
+  - name: buf-cache
+    host:
+      path: /home/docker/drone/buf/.cache # 从宿主机中挂载的目录
+</code></pre><p><code>ssh_private_key</code> 经过<code>echo '私钥文件' | base64</code>生成，并配置在 DRONE 的 Secrets 上
+<code>buf-cache</code> 是 drone 挂载硬盘，设置 buf 缓存，加快构建速度
+<code>reg.xxxx.com/golang/apis-generate-go:1.0.0</code> 封装的一个包含 buf 命令的镜像</p><h3 id=apis-generate-go-dockerfile-基础镜像>apis-generate-go DOCKERFILE 基础镜像</h3><pre><code class=language-dockerfile>FROM golang:1.21-alpine
+
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories &amp;&amp; \
+    apk add --no-cache git protobuf curl openssh-server openssh-client &amp;&amp; \
+    git --version &amp;&amp; \
+    protoc --version &amp;&amp; \
+    ssh-keygen -A
+
+RUN BIN=&quot;/usr/local/bin&quot; &amp;&amp; \
+    VERSION=&quot;1.26.1&quot; &amp;&amp; \
+    curl -sSL \
+    &quot;https://mirror.ghproxy.com/https://github.com/bufbuild/buf/releases/download/v${VERSION}/buf-$(uname -s)-$(uname -m)&quot; \
+    -o &quot;${BIN}/buf&quot; &amp;&amp; \
+    chmod +x &quot;${BIN}/buf&quot;
+
+RUN go env -w GOPROXY=https://goproxy.cn,direct &amp;&amp; \
+    go install google.golang.org/protobuf/cmd/protoc-gen-go@latest &amp;&amp; \
+    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest &amp;&amp; \
+    go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest &amp;&amp; \
+    go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest &amp;&amp; \
+    go install github.com/go-kratos/kratos/cmd/protoc-gen-go-http/v2@latest
+
+</code></pre><p>构建指令 <code>docker build --platform linux/amd64 -t reg.xxxx.com/golang/apis-generate-go:1.0.0</code></p><h3 id=编译-proto-文件>编译 proto 文件</h3><h4 id=apis-gogenyml>apis-go.gen.yml</h4><pre><code class=language-yml>version: v1
+managed:
+  enabled: true
+
+plugins:
+  - plugin: buf.build/protocolbuffers/go:v1.33.0 # 生成go代码
+    out: apis-go
+    opt: paths=source_relative
+  - plugin: buf.build/grpc/go # 生成grpc代码
+    out: apis-go
+    opt: paths=source_relative,require_unimplemented_servers=false
+  - plugin: buf.build/bufbuild/validate-go
+    out: apis-go
+    opt: paths=source_relative
+  - plugin: go-http # 生成http-gateway，本地插件（kratos）
+    out: apis-go
+    opt:
+      - paths=source_relative
+</code></pre><h4 id=apis-gosh>apis-go.sh</h4><pre><code class=language-sh>#!/bin/bash
+
+echo &quot;---- buf generate ----&quot;
+echo &quot;+ buf generate&quot;
+buf generate --template apis-go.gen.yml &amp;&amp; echo &quot;buf generate success&quot; || exit
+
+echo &quot;---- 配置 git ssh，实现免密提交到 ${TARGET_REPO} 仓库 ----&quot;
+eval &quot;$(ssh-agent -s)&quot;
+ssh-add &lt;(echo &quot;${SSH_PRIVATE_KEY}&quot; | base64 -d)
+mkdir -p ~/.ssh
+touch ~/.ssh/config
+{
+    echo &quot;StrictHostKeyChecking no&quot;
+    echo &quot;UserKnownHostsFile /dev/null&quot;
+} &gt;&gt;~/.ssh/config
+
+echo &quot;---- 配置 git 用户信息为当前触发流水线的用户 ----&quot;
+if [ -z &quot;${DRONE_COMMIT_AUTHOR}&quot; ]; then
+  echo &quot;无法获取提交用户git信息，请检查仓库邮箱是否和gogs对应&quot;
+  exit
+fi
+echo &quot;git提交用户：${DRONE_COMMIT_AUTHOR}&quot;
+git config --global user.name &quot;${DRONE_COMMIT_AUTHOR}&quot;
+git config --global user.email &quot;${DRONE_COMMIT_AUTHOR_EMAIL}&quot;
+
+echo &quot;---- git clone ${TARGET_REPO} 仓库，只拉取指定分支的最后一次 commit ----&quot;
+mkdir -p /app
+cd /app || exit
+echo &quot;git clone --branch ${DRONE_BRANCH} ${TARGET_REPO_ADDR}&quot;
+if git clone --branch &quot;${DRONE_BRANCH}&quot; &quot;${TARGET_REPO_ADDR}&quot; &gt; /dev/null 2&gt;&amp;1; then
+  echo &quot;远程仓库 ${TARGET_REPO} 已存在，直接拉取&quot;
+else
+  echo &quot;远程仓库 ${TARGET_REPO} 不存在，基于 master 分支创建&quot;
+  echo &quot;+ git clone ${TARGET_REPO_ADDR}&quot;
+  git clone &quot;${TARGET_REPO_ADDR}&quot; || exit
+  cd &quot;${TARGET_REPO}&quot; || exit
+  echo &quot;+ git checkout -b ${DRONE_BRANCH}&quot;
+  git checkout -b &quot;${DRONE_BRANCH}&quot;
+fi
+
+echo &quot;---- 拷贝go文件到 ${TARGET_REPO} 仓库 ----&quot;
+cd /app/&quot;${TARGET_REPO}&quot; || exit
+echo &quot;删除并复制文件&quot;
+
+echo &quot;+ find /app/${TARGET_REPO}/* -mindepth 1 -type d -exec rm -rf {} +&quot;
+find /app/&quot;${TARGET_REPO}&quot;/* -type d -exec rm -rf {} + || exit
+echo &quot;+ cp -rf&quot;
+cp -rf /app/&quot;${DRONE_REPO_NAME}&quot;/apis-go/* /app/&quot;${TARGET_REPO}&quot; || exit
+cp /app/&quot;${DRONE_REPO_NAME}&quot;/.apis-go.drone.yml /app/&quot;${TARGET_REPO}&quot;/.drone.yml || exit
+
+echo &quot;+ go mod tidy&quot;
+go mod tidy &gt; /dev/null 2&gt;&amp;1
+
+echo &quot;---- 提交到 ${TARGET_REPO} 仓库 ----&quot;
+git fetch --unshallow
+git add . || exit
+printf &quot;+ git commit\n&quot;
+git commit -m &quot;${DRONE_COMMIT_MESSAGE}&quot;
+printf &quot;+ git push\n&quot;
+git push --set-upstream origin &quot;${DRONE_BRANCH}&quot;
+
+echo &quot;---- 同步成功 ----&quot;
+</code></pre><h3 id=生成-swagger>生成 swagger</h3><h4 id=apis-swaggergenyml>apis-swagger.gen.yml</h4><pre><code class=language-yml>version: v1
+managed:
+  enabled: true
+
+plugins:
+  - plugin: buf.build/grpc-ecosystem/openapiv2 # 生成openapi文档
+    out: apis-swagger
+    opt:
+      - disable_default_responses=false
+      - json_names_for_fields=false
+</code></pre><h4 id=apis-swaggersh>.apis-swagger.sh</h4><pre><code class=language-sh>#!/bin/bash
+
+echo &quot;---- buf generate ----&quot;
+echo &quot;+ buf generate&quot;
+buf generate --template apis-swagger.gen.yml &amp;&amp; echo &quot;buf generate success&quot; || exit
+
+echo &quot;----- 获取项目列表 -----&quot;
+PROJECTS=$(find /app/apis-swagger/* -mindepth 0 -type d) || exit
+if [ -z &quot;${PROJECTS}&quot; ]; then
+  echo &quot;没有项目，跳过上传&quot;
+  exit
+fi
+
+for PROJECT in ${PROJECTS}; do
+  echo &quot;---- 项目：${PROJECT} ----&quot;
+  if [ -f &quot;${PROJECT}/token&quot; ]; then
+    echo &quot;-- 读取token文件 ---&quot;
+    token=$(cat &quot;${PROJECT}/token&quot;)
+
+    echo &quot;-- 获取项目下的文件 ---&quot;
+    echo &quot;+ ls ${PROJECT}&quot;
+    FILES=$(ls &quot;${PROJECT}&quot;) || exit
+
+    for FILE in ${FILES}; do
+      # 文化名不是token
+      if [ &quot;${FILE}&quot; == &quot;${PROJECT}/token&quot; ]; then
+        continue
+      fi
+      echo &quot;+ curl import_data ${FILE}&quot;
+      fileContent=$(cat &quot;${FILE}&quot;) || exit
+      curl -s --location --request POST 'http://yapi.xxxx.com/api/open/import_data' \
+      --header 'Connection: keep-alive' \
+      --header 'Content-Type: application/x-www-form-urlencoded' \
+      --data-urlencode 'type=swagger' \
+      --data-urlencode 'merge=good' \
+      --data-urlencode &quot;token=${token}&quot; \
+      --data-urlencode &quot;json=$fileContent&quot; || exit
+    done
+    printf '\n'
+  else
+    echo &quot;不存在token文件，不执行yapi导入操作&quot;
+  fi
+done
+
+</code></pre><h2 id=参考>参考</h2><ol><li><a href="https://yuyy.info/?p=1980">Gitlab CI/CD 实践六：统一管理 protocol buffer，API 大仓设计与实现</a></li><li><a href=https://mp.weixin.qq.com/s/cBXZjg_R8MLFDJyFtpjVVQ>真是头疼，Proto 代码到底放哪里？</a></li></ol><footer><script src=//cdn.jsdelivr.net/combine/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js,npm/@xiee/utils/js/load-highlight.js defer></script><hr><div class=copyright>© <a href=https://mingzaily.com>mingzaily</a> 2019-2024 | <a href=https://github.com/mingzaily>Github</a></div></footer></article></body></html>

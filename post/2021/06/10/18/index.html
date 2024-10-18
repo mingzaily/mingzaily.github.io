@@ -1,0 +1,20 @@
+<!doctype html><html lang=zh-CN><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Window Terminal配置 - 星河</title>
+<meta property="og:title" content="Window Terminal配置 - 星河"><meta name=twitter:card content="summary"><meta property="description" content="最近发现一个 Shell 利器，Windows Terminal，可以在微软商店自行下载
+[&mldr;] 前置要求是安装好 Git，比如作者的 Git 目录为D:\Git
+[&mldr;] 点击设置 [&mldr;] 点击左下角，新增，会出现一个默认配置，可以选择 json 编辑，也可以图形化配置
+[&mldr;] 名称自由编辑
+[&mldr;] 命令行，填写 Git 安装目 &amp;hellip;"><meta property="og:description" content="最近发现一个 Shell 利器，Windows Terminal，可以在微软商店自行下载
+[&mldr;] 前置要求是安装好 Git，比如作者的 Git 目录为D:\Git
+[&mldr;] 点击设置 [&mldr;] 点击左下角，新增，会出现一个默认配置，可以选择 json 编辑，也可以图形化配置
+[&mldr;] 名称自由编辑
+[&mldr;] 命令行，填写 Git 安装目 &amp;hellip;"><meta name=twitter:image content="https://z3.ax1x.com/2021/06/10/2RFyE8.png"><link rel=stylesheet href=//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/fonts.css><link rel=stylesheet href=/css/diary.css></head><body class=post><header class=masthead><h1><a href=/>星河</a></h1><p class=tagline>醉后不知天在水，满船清梦压星河</p><nav class=menu><input id=menu-check type=checkbox hidden>
+<label id=menu-label for=menu-check class=unselectable hidden><span class="icon close-icon">✕</span>
+<span class="icon open-icon">☰</span>
+<span class=text>Menu</span></label><ul><li><a href=/>首页</a></li><li><a href=/shuoshuo>说说</a></li><li><a href=/categories/>分类</a></li><li><a href=/tags/>标签</a></li><li><a href=/about/>关于</a></li></ul></nav></header><article class=main><header class=title><h1>Window Terminal配置</h1><h3>mingzaily
+/
+2021-06-10</h3><hr></header><h3 id=场景>场景</h3><p>最近发现一个 Shell 利器，Windows Terminal，可以在微软商店自行下载</p><h3 id=git-bash>Git-Bash</h3><p>前置要求是安装好 Git，比如作者的 Git 目录为<code>D:\Git</code></p><h4 id=配置>配置</h4><ul><li><p>点击设置
+<a href=https://imgtu.com/i/2RFyE8><img src=https://z3.ax1x.com/2021/06/10/2RFyE8.png alt=2RFyE8.png></a></p></li><li><p>点击左下角，新增，会出现一个默认配置，可以选择 json 编辑，也可以图形化配置</p></li><li><p>名称自由编辑</p></li><li><p>命令行，填写 Git 安装目录下 bin 目录的 bin.exe，比如<code>D:\Git\bin\bash.exe</code></p></li><li><p>启动目录，<code>%USERPROFILE%</code>即可</p></li></ul><p>总体算完成了</p><h4 id=补充>补充</h4><p>细心的读者会发现部分命令比如<code>ll</code>在 git-bash 可以使用，但是在 Terminal 下的 bash 不能使用
+需要我们自行添加</p><pre><code># 编辑Git安装目录D:\Git\vendor\etc下的bash.bashrc文件
+# 新增
+alias ll=&quot;ls -l&quot;
+</code></pre><p>保存即可</p><footer><script src=//cdn.jsdelivr.net/combine/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js,npm/@xiee/utils/js/load-highlight.js defer></script><hr><div class=copyright>© <a href=https://mingzaily.com>mingzaily</a> 2019-2024 | <a href=https://github.com/mingzaily>Github</a></div></footer></article></body></html>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Homebrew on 星河</title><link>/tags/homebrew/</link><description>Recent content in Homebrew on 星河</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Sat, 23 Oct 2021 00:00:00 +0000</lastBuildDate><atom:link href="/tags/homebrew/index.xml" rel="self" type="application/rss+xml"/><item><title>Homebrew 安装软件加速</title><link>/post/2021/10/23/22/</link><pubDate>Sat, 23 Oct 2021 00:00:00 +0000</pubDate><guid>/post/2021/10/23/22/</guid><description>&lt;h2 id="加速">加速&lt;/h2>
+&lt;ol>
+&lt;li>
+&lt;p>安装代理软件 &lt;a href="https://github.com/yichengchen/clashX">https://github.com/yichengchen/clashX&lt;/a>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>两种方法&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>方法一（好处：可控，需要进行brew更新才使用；坏处：较为繁琐）&lt;/p>
+&lt;p>在&lt;code>.bashrc&lt;/code>或&lt;code>.zshrc&lt;/code>设置&lt;/p>
+&lt;pre>&lt;code class="language-shell"># ALIAS
+alias proxy=&amp;quot;export https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_proxy=socks5://127.0.0.1:7890; echo 'Proxy on'&amp;quot;
+alias unproxy=&amp;quot;unset https_proxy http_proxy all_proxy; echo 'Proxy off'&amp;quot;
+&lt;/code>&lt;/pre>
+&lt;p>生效&lt;code>source .zshrc&lt;/code>&lt;/p>
+&lt;p>每次iTerm2设置登录执行&lt;code>proxy&lt;/code>或手动执行&lt;code>proxy&lt;/code>&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;ul>
+&lt;li>
+&lt;p>方法二（好处：便捷；坏处：可能影响其他命令）&lt;/p>
+&lt;p>在&lt;code>.bashrc&lt;/code>或&lt;code>.zshrc&lt;/code>设置&lt;/p>
+&lt;pre>&lt;code class="language-shell"># Proxy
+export https_proxy=http://127.0.0.1:7890
+export http_proxy=http://127.0.0.1:7890
+export all_proxy=socks5://127.0.0.1:7890
+&lt;/code>&lt;/pre>
+&lt;p>生效&lt;code>source .zshrc&lt;/code>&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>执行命令&lt;/p>
+&lt;pre>&lt;code class="language-shell">/bin/bash -c &amp;quot;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)&amp;quot;
+&lt;/code>&lt;/pre>
+&lt;/li>
+&lt;li>
+&lt;p>按照指令安装&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>执行命令查看是否正常&lt;/p>
+&lt;pre>&lt;code class="language-shell">brew -v
+
+# output:
+# Homebrew 3.2.17-133-g890190c
+# Homebrew/homebrew-core (git revision 5d84b1431d6; last commit 2021-10-23)
+# Homebrew/homebrew-cask (git revision 65500e81bf; last commit 2021-10-23)
+&lt;/code>&lt;/pre>
+&lt;/li>
+&lt;/ol>
+&lt;h2 id="常用命令">常用命令&lt;/h2>
+&lt;ul>
+&lt;li>更新 Homebrew 自己&lt;/li>
+&lt;/ul>
+&lt;pre>&lt;code class="language-shell">brew update
+&lt;/code>&lt;/pre>
+&lt;ul>
+&lt;li>查看哪些安装包需要更新：&lt;/li>
+&lt;/ul>
+&lt;pre>&lt;code class="language-shell">brew outdated
+&lt;/code>&lt;/pre>
+&lt;ul>
+&lt;li>列出已安装包&lt;/li>
+&lt;/ul>
+&lt;pre>&lt;code class="language-shell">brew list
+&lt;/code>&lt;/pre>
+&lt;ul>
+&lt;li>更新&lt;/li>
+&lt;/ul>
+&lt;pre>&lt;code class="language-shell">brew upgrade # 更新所有的包
+brew upgrade $FORMULA # 更新指定的包
+&lt;/code>&lt;/pre>
+&lt;ul>
+&lt;li>清理旧版本&lt;/li>
+&lt;/ul>
+&lt;pre>&lt;code class="language-shell">brew cleanup # 清理所有包的旧版本
+brew cleanup $FORMULA # 清理指定包的旧版本
+brew cleanup -n # 查看可清理的旧版本包，不执行实际操作
+&lt;/code>&lt;/pre>
+&lt;ul>
+&lt;li>锁定不想更新的包&lt;/li>
+&lt;/ul>
+&lt;pre>&lt;code class="language-shell">brew pin $FORMULA # 锁定某个包
+brew unpin $FORMULA # 取消锁定
+&lt;/code>&lt;/pre>
+&lt;ul>
+&lt;li>查看安装包的相关信息&lt;/li>
+&lt;/ul>
+&lt;pre>&lt;code class="language-shell">brew info $FORMULA # 显示某个包的信息
+brew info # 显示安装了包数量，文件数量，和总占用空间
+brew deps --installed --tree # 查看已安装的包的依赖，树形显示
+# `brew info` 可以查看包的相关信息，最有用的应该是包依赖和相应的命令。比如 Nginx 会提醒你怎么加 launchctl，PostgreSQL 会告诉你如何迁移数据库。这些信息会在包安装完成后自动显示，如果忘了的话可以用这个命令很方便地查看。
+&lt;/code>&lt;/pre>
+&lt;ul>
+&lt;li>删除&lt;/li>
+&lt;/ul>
+&lt;pre>&lt;code class="language-shell">brew rm $FORMULA # 删除某个包
+brew uninstall --force $FORMULA # 删除所有版本
+&lt;/code>&lt;/pre></description></item></channel></rss>

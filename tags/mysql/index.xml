@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Mysql on 星河</title><link>/tags/mysql/</link><description>Recent content in Mysql on 星河</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Fri, 18 Oct 2019 00:00:00 +0000</lastBuildDate><atom:link href="/tags/mysql/index.xml" rel="self" type="application/rss+xml"/><item><title>数据库</title><link>/post/2019/10/18/8/</link><pubDate>Fri, 18 Oct 2019 00:00:00 +0000</pubDate><guid>/post/2019/10/18/8/</guid><description>&lt;h2 id="数据库架构">数据库架构&lt;/h2>
+&lt;h3 id="数据库设计">数据库设计&lt;/h3>
+&lt;ul>
+&lt;li>程序实例
+&lt;ul>
+&lt;li>存储管理&lt;/li>
+&lt;li>缓存机制&lt;/li>
+&lt;li>SQL 解析&lt;/li>
+&lt;li>日志管理&lt;/li>
+&lt;li>权限划分&lt;/li>
+&lt;li>容灾机制&lt;/li>
+&lt;li>索引管理&lt;/li>
+&lt;li>锁管理&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>存储（文件系统）&lt;/li>
+&lt;/ul>
+&lt;h3 id="索引模块">索引模块&lt;/h3>
+&lt;p>官方方对索引的定义为：索引是帮助 MySQL 高效获取数据的数据结构&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>为什么要用索引&lt;/p>
+&lt;ul>
+&lt;li>快速查询数据&lt;/li>
+&lt;li>保证数据的唯一性&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>索引的优缺点&lt;/p>
+&lt;ul>
+&lt;li>优点
+&lt;ul>
+&lt;li>大大加快数据检索速度&lt;/li>
+&lt;li>创建唯一索引，保证数据库表中每行数据的唯一性&lt;/li>
+&lt;li>加速表之间的连接&lt;/li>
+&lt;li>减少查询中分组和排序的时间&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>缺点
+&lt;ul>
+&lt;li>需要占用物理空间&lt;/li>
+&lt;li>对表中数据进行增加、删除和修改时索引也要更新，降低了数据维护速度&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>什么样的信息能成为索引&lt;/p>
+&lt;ul>
+&lt;li>主键、唯一键以及普通键等等&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>索引的数据结构&lt;/p>
+&lt;ul>
+&lt;li>生成索引，建立二叉查找树进行二分查找 效率 O(logn)&lt;/li>
+&lt;li>生成索引，建立 B-Tree 进行查找 效率 O(logn)
+&lt;ul>
+&lt;li>B-Tree&lt;/li>
+&lt;li>根节点至少包括两个孩子&lt;/li>
+&lt;li>树中每个节点最多含有 m 个孩子(m&amp;gt;=2)&lt;/li>
+&lt;li>除根节点和叶子节点外，其他每个节点至少有 ceil(m/2)个孩子&lt;/li>
+&lt;li>所有叶子节点都位于同一层&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>生成索引，建立 B+-Tree 进行查找（主流）
+&lt;ul>
+&lt;li>定义基本与 B-Tree 一致&lt;/li>
+&lt;li>非叶子节点的子树指针与关键字个数相同&lt;/li>
+&lt;li>非叶子节点仅使用索引，数据都保存在叶子节点中&lt;/li>
+&lt;li>所有叶子节点均有一个链指针指向下一个叶子节点&lt;/li>
+&lt;li>B+-Tree 更适合用来做存储引擎
+&lt;ul>
+&lt;li>B+树的磁盘读写代价更低&lt;/li>
+&lt;li>B+树的查询效率更加稳定&lt;/li>
+&lt;li>B+树更有利于对数据库的扫描&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>生成索引，建立 Hash 结构进行查找
+&lt;ul>
+&lt;li>查询效率更高&lt;/li>
+&lt;li>缺点
+&lt;ul>
+&lt;li>仅仅能满足&amp;quot;=&amp;quot;，&amp;ldquo;IN&amp;rdquo;，不能使用范围查询&lt;/li>
+&lt;li>无法被用来避免数据的排序操作&lt;/li>
+&lt;li>不能利用部分索引键查询&lt;/li>
+&lt;li>不能避免表扫码&lt;/li>
+&lt;li>遇到大量 Hash 值相等的情况后性能并不一定就会比 B-Tree 索引高&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>BitMap 索引&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>密集索引和稀疏索引的区别&lt;/p></description></item></channel></rss>
