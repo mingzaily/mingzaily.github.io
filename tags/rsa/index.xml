@@ -1,19 +1,16 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>Rsa on 星河</title>
-    <link>/tags/rsa/</link>
-    <description>Recent content in Rsa on 星河</description>
-    <generator>Hugo</generator>
-    <language>zh-CN</language>
-    <lastBuildDate>Mon, 05 Feb 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="/tags/rsa/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>RSA 加解密</title>
-      <link>/post/2024/02/05/55/</link>
-      <pubDate>Mon, 05 Feb 2024 00:00:00 +0000</pubDate>
-      <guid>/post/2024/02/05/55/</guid>
-      <description>&lt;h2 id=&#34;rsa-加密简介&#34;&gt;RSA 加密简介&lt;/h2&gt;&#xA;&lt;p&gt;RSA 加密是一种非对称加密。可以在不直接传递密钥的情况下，完成解密。这能够确保信息的安全性，避免了直接传递密钥所造成的被破解的风险。是由一对密钥来进行加解密的过程，分别称为公钥和私钥。两者之间有数学相关，该加密算法的原理就是对一极大整数做因数分解的困难性来保证安全性。通常个人保存私钥，公钥是公开的（可能同时多人持有）。&lt;/p&gt;&#xA;&lt;h2 id=&#34;rsa-加密签名区别&#34;&gt;RSA 加密、签名区别&lt;/h2&gt;&#xA;&lt;p&gt;加密和签名都是为了安全性考虑，但略有不同。常有人问加密和签名是用私钥还是公钥？其实都是对加密和签名的作用有所混淆。简单的说，加密是为了防止信息被泄露，而签名是为了防止信息被篡改。这里举 2 个例子说明。&lt;/p&gt;&#xA;&lt;h4 id=&#34;第一个场景战场上b-要给-a-传递一条消息内容为某一指令&#34;&gt;第一个场景：战场上，B 要给 A 传递一条消息，内容为某一指令。&lt;/h4&gt;&#xA;&lt;p&gt;RSA 的加密过程如下：&lt;/p&gt;&#xA;&lt;p&gt;（1）A 生成一对密钥（公钥和私钥），私钥不公开，A 自己保留。公钥为公开的，任何人可以获取。&lt;/p&gt;&#xA;&lt;p&gt;（2）A 传递自己的公钥给 B，B 用 A 的公钥对消息进行加密。&lt;/p&gt;&#xA;&lt;p&gt;（3）A 接收到 B 加密的消息，利用 A 自己的私钥对消息进行解密。&lt;/p&gt;&#xA;&lt;p&gt;在这个过程中，只有 2 次传递过程，第一次是 A 传递公钥给 B，第二次是 B 传递加密消息给 A，即使都被敌方截获，也没有危险性，因为只有 A 的私钥才能对消息进行解密，防止了消息内容的泄露。&lt;/p&gt;&#xA;&lt;h4 id=&#34;第二个场景a-收到-b-发的消息后需要进行回复收到&#34;&gt;第二个场景：A 收到 B 发的消息后，需要进行回复“收到”。&lt;/h4&gt;&#xA;&lt;p&gt;RSA 签名的过程如下：&lt;/p&gt;&#xA;&lt;p&gt;（1）A 生成一对密钥（公钥和私钥），私钥不公开，A 自己保留。公钥为公开的，任何人可以获取。&lt;/p&gt;&#xA;&lt;p&gt;（2）A 用自己的私钥对消息加签，形成签名，并将加签的消息和消息本身一起传递给 B。&lt;/p&gt;&#xA;&lt;p&gt;（3）B 收到消息后，在获取 A 的公钥进行验签，如果验签出来的内容与消息本身一致，证明消息是 A 回复的。&lt;/p&gt;&#xA;&lt;p&gt;在这个过程中，只有 2 次传递过程，第一次是 A 传递加签的消息和消息本身给 B，第二次是 B 获取 A 的公钥，即使都被敌方截获，也没有危险性，因为只有 A 的私钥才能对消息进行签名，即使知道了消息内容，也无法伪造带签名的回复给 B，防止了消息内容的篡改。&lt;/p&gt;</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Rsa on 星河</title><link>/tags/rsa/</link><description>Recent content in Rsa on 星河</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Mon, 05 Feb 2024 00:00:00 +0000</lastBuildDate><atom:link href="/tags/rsa/index.xml" rel="self" type="application/rss+xml"/><item><title>RSA 加解密</title><link>/post/2024/02/05/55/</link><pubDate>Mon, 05 Feb 2024 00:00:00 +0000</pubDate><guid>/post/2024/02/05/55/</guid><description>&lt;h2 id="rsa-加密简介">RSA 加密简介&lt;/h2>
+&lt;p>RSA 加密是一种非对称加密。可以在不直接传递密钥的情况下，完成解密。这能够确保信息的安全性，避免了直接传递密钥所造成的被破解的风险。是由一对密钥来进行加解密的过程，分别称为公钥和私钥。两者之间有数学相关，该加密算法的原理就是对一极大整数做因数分解的困难性来保证安全性。通常个人保存私钥，公钥是公开的（可能同时多人持有）。&lt;/p>
+&lt;h2 id="rsa-加密签名区别">RSA 加密、签名区别&lt;/h2>
+&lt;p>加密和签名都是为了安全性考虑，但略有不同。常有人问加密和签名是用私钥还是公钥？其实都是对加密和签名的作用有所混淆。简单的说，加密是为了防止信息被泄露，而签名是为了防止信息被篡改。这里举 2 个例子说明。&lt;/p>
+&lt;h4 id="第一个场景战场上b-要给-a-传递一条消息内容为某一指令">第一个场景：战场上，B 要给 A 传递一条消息，内容为某一指令。&lt;/h4>
+&lt;p>RSA 的加密过程如下：&lt;/p>
+&lt;p>（1）A 生成一对密钥（公钥和私钥），私钥不公开，A 自己保留。公钥为公开的，任何人可以获取。&lt;/p>
+&lt;p>（2）A 传递自己的公钥给 B，B 用 A 的公钥对消息进行加密。&lt;/p>
+&lt;p>（3）A 接收到 B 加密的消息，利用 A 自己的私钥对消息进行解密。&lt;/p>
+&lt;p>在这个过程中，只有 2 次传递过程，第一次是 A 传递公钥给 B，第二次是 B 传递加密消息给 A，即使都被敌方截获，也没有危险性，因为只有 A 的私钥才能对消息进行解密，防止了消息内容的泄露。&lt;/p>
+&lt;h4 id="第二个场景a-收到-b-发的消息后需要进行回复收到">第二个场景：A 收到 B 发的消息后，需要进行回复“收到”。&lt;/h4>
+&lt;p>RSA 签名的过程如下：&lt;/p>
+&lt;p>（1）A 生成一对密钥（公钥和私钥），私钥不公开，A 自己保留。公钥为公开的，任何人可以获取。&lt;/p>
+&lt;p>（2）A 用自己的私钥对消息加签，形成签名，并将加签的消息和消息本身一起传递给 B。&lt;/p>
+&lt;p>（3）B 收到消息后，在获取 A 的公钥进行验签，如果验签出来的内容与消息本身一致，证明消息是 A 回复的。&lt;/p>
+&lt;p>在这个过程中，只有 2 次传递过程，第一次是 A 传递加签的消息和消息本身给 B，第二次是 B 获取 A 的公钥，即使都被敌方截获，也没有危险性，因为只有 A 的私钥才能对消息进行签名，即使知道了消息内容，也无法伪造带签名的回复给 B，防止了消息内容的篡改。&lt;/p></description></item></channel></rss>

@@ -1,112 +1,12 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-    <title>Casbin 理解 - 星河</title>
-    <meta property="og:title" content="Casbin 理解 - 星河">
-    
-    <meta name="twitter:card" content="summary">
-
-    
-    
-      
-    
-
-    
-      
-      <meta property="description" content="model.conf
-[request_definition] r = sub, obj, act [policy_definition] p = sub, obj, act [role_definition] g = _, _ [policy_effect] e = some(where (p.eft == allow)) [matchers] m = g(r.sub, p.sub) &amp;hellip;">
-      <meta property="og:description" content="model.conf
-[request_definition] r = sub, obj, act [policy_definition] p = sub, obj, act [role_definition] g = _, _ [policy_effect] e = some(where (p.eft == allow)) [matchers] m = g(r.sub, p.sub) &amp;hellip;">
-      
-    
-
-    
-    
-    
-
-    
-
-    
-    
-
-
-<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css">
-
-
-
-    <link rel="stylesheet" href="/css/style.css" />
-    <link rel="stylesheet" href="/css/fonts.css" />
-    <link rel="stylesheet" href="/css/diary.css" />
-    
-  </head>
-  <body class="post">
-    <header class="masthead">
-      <h1><a href="/">星河</a></h1>
-
-<p class="tagline">醉后不知天在水，满船清梦压星河</p>
-
-      <nav class="menu">
-  <input id="menu-check" type="checkbox" hidden/>
-  <label id="menu-label" for="menu-check" class="unselectable" hidden>
-    <span class="icon close-icon">✕</span>
-    <span class="icon open-icon">☰</span>
-    <span class="text">Menu</span>
-  </label>
-  <ul>
-  
-  
-  <li><a href="/">首页</a></li>
-  
-  <li><a href="/shuoshuo">说说</a></li>
-  
-  <li><a href="/categories/">分类</a></li>
-  
-  <li><a href="/tags/">标签</a></li>
-  
-  <li><a href="/about/">关于</a></li>
-  
-  
-  </ul>
-</nav>
-
-    </header>
-
-    <article class="main">
-      <header class="title">
-      
-<h1>Casbin 理解</h1>
-
-
-
-<h3>
-
-mingzaily
-
-
-
-
-
-
- / 
-2021-12-31
-</h3>
-
-<hr>
-
-
-      </header>
-
-
-
-
-
-<h3 id="rbac">RBAC</h3>
-<p>model.conf</p>
-<pre><code class="language-conf">[request_definition]
+<!doctype html><html lang=zh-CN><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Casbin 理解 - 星河</title>
+<meta property="og:title" content="Casbin 理解 - 星河"><meta name=twitter:card content="summary"><meta property="description" content="model.conf
+[request_definition] r = sub, obj, act [policy_definition] p = sub, obj, act [role_definition] g = _, _ [policy_effect] e = some(where (p.eft == allow)) [matchers] m = g(r.sub, p.sub) &amp;hellip;"><meta property="og:description" content="model.conf
+[request_definition] r = sub, obj, act [policy_definition] p = sub, obj, act [role_definition] g = _, _ [policy_effect] e = some(where (p.eft == allow)) [matchers] m = g(r.sub, p.sub) &amp;hellip;"><link rel=stylesheet href=//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/fonts.css><link rel=stylesheet href=/css/diary.css></head><body class=post><header class=masthead><h1><a href=/>星河</a></h1><p class=tagline>醉后不知天在水，满船清梦压星河</p><nav class=menu><input id=menu-check type=checkbox hidden>
+<label id=menu-label for=menu-check class=unselectable hidden><span class="icon close-icon">✕</span>
+<span class="icon open-icon">☰</span>
+<span class=text>Menu</span></label><ul><li><a href=/>首页</a></li><li><a href=/shuoshuo>说说</a></li><li><a href=/categories/>分类</a></li><li><a href=/tags/>标签</a></li><li><a href=/about/>关于</a></li></ul></nav></header><article class=main><header class=title><h1>Casbin 理解</h1><h3>mingzaily
+/
+2021-12-31</h3><hr></header><h3 id=rbac>RBAC</h3><p>model.conf</p><pre><code class=language-conf>[request_definition]
 r = sub, obj, act
 
 [policy_definition]
@@ -120,32 +20,17 @@ e = some(where (p.eft == allow))
 
 [matchers]
 m = g(r.sub, p.sub) &amp;&amp; r.obj == p.obj &amp;&amp; r.act == p.act
-</code></pre>
-<p>casbin_rule</p>
-<pre><code>p, alice, data1, read
+</code></pre><p>casbin_rule</p><pre><code>p, alice, data1, read
 p, bob, data2, write
 p, data2_admin, data2, read
 p, data2_admin, data2, write
 
 g, alice, data2_admin
-</code></pre>
-<p>粗略将<code>sub</code>可以理解为角色、用户，将<code>obj</code>理解为资源，将<code>act</code>理解为操作
+</code></pre><p>粗略将<code>sub</code>可以理解为角色、用户，将<code>obj</code>理解为资源，将<code>act</code>理解为操作
 当<code>sub</code>为用户时，即用户直接对资源进行授权
-当<code>sub</code>为角色时，即用户分配有某角色，某角色对资源进行授权</p>
-<p>从上面的例子可以看出</p>
-<ol>
-<li><code>alice</code>被授予了对<code>data1</code>资源的读权限</li>
-<li><code>bob</code>被授予了对<code>data2</code>资源的写权限</li>
-<li><code>data2_admin</code>被授予了<code>data2</code>的读写权限，我们可以把<code>data2_admin</code>可以理解为角色</li>
-<li>将<code>alice</code>分配有<code>data2_admin</code>角色，则<code>alice</code>此时具有对<code>data2</code>的读写权限</li>
-</ol>
-<p>p：<code>用户、角色</code>对<code>资源</code>的授权
-g：将<code>用户</code>分配有<code>角色</code>组</p>
-<p>casbin 也支持角色层级
-<code>g group1 group2</code>意味着将<code>group1</code>组分配有<code>group2</code>组，则<code>group1</code>组成员包含<code>group2</code>组的授权策略</p>
-<h3 id="rbac-with-resource-roles">RBAC with resource roles</h3>
-<p>model.conf</p>
-<pre><code class="language-conf">[request_definition]
+当<code>sub</code>为角色时，即用户分配有某角色，某角色对资源进行授权</p><p>从上面的例子可以看出</p><ol><li><code>alice</code>被授予了对<code>data1</code>资源的读权限</li><li><code>bob</code>被授予了对<code>data2</code>资源的写权限</li><li><code>data2_admin</code>被授予了<code>data2</code>的读写权限，我们可以把<code>data2_admin</code>可以理解为角色</li><li>将<code>alice</code>分配有<code>data2_admin</code>角色，则<code>alice</code>此时具有对<code>data2</code>的读写权限</li></ol><p>p：<code>用户、角色</code>对<code>资源</code>的授权
+g：将<code>用户</code>分配有<code>角色</code>组</p><p>casbin 也支持角色层级
+<code>g group1 group2</code>意味着将<code>group1</code>组分配有<code>group2</code>组，则<code>group1</code>组成员包含<code>group2</code>组的授权策略</p><h3 id=rbac-with-resource-roles>RBAC with resource roles</h3><p>model.conf</p><pre><code class=language-conf>[request_definition]
 r = sub, obj, act
 
 [policy_definition]
@@ -160,66 +45,13 @@ e = some(where (p.eft == allow))
 
 [matchers]
 m = g(r.sub, p.sub) &amp;&amp; g2(r.obj, p.obj) &amp;&amp; r.act == p.act
-</code></pre>
-<p>casbin_rule</p>
-<pre><code>p, bob, data2, write
+</code></pre><p>casbin_rule</p><pre><code>p, bob, data2, write
 p, data_group_admin, data_group, write
 p, data_group_admin, data_group, read
 
 g, alice, data_group_admin
 g2, data1, data_group
 g2, data2, data_group
-</code></pre>
-<p>大致与普通 rbac 类似，使用 g2 的场景为对资源进行整合
-多了两步</p>
-<ol>
-<li><code>data1</code>，<code>data2</code>资源分配至<code>data_group</code></li>
-<li><code>data_group_admin</code>角色可以对<code>data_group</code>资源组进行操作
-意味着<code>alice</code>可以对<code>data1</code>，<code>data2</code>进行操作</li>
-</ol>
-<blockquote>
-<p>g 和 g2 不同为 一个为分配有，一个为分配至</p>
-</blockquote>
-<h3 id="文档">文档</h3>
-<p><a href="https://casbin.org/docs/zh-CN/rbac">https://casbin.org/docs/zh-CN/rbac</a></p>
-
-
-
-  <footer>
-  
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<script src="//cdn.jsdelivr.net/combine/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js,npm/@xiee/utils/js/load-highlight.js" defer></script>
-
-
-
-  
-  <hr>
-  <div class="copyright">© <a href="https://mingzaily.com">mingzaily</a> 2019-2024 | <a href="https://github.com/mingzaily">Github</a></div>
-  
-  </footer>
-  </article>
-  
-  </body>
-</html>
-
+</code></pre><p>大致与普通 rbac 类似，使用 g2 的场景为对资源进行整合
+多了两步</p><ol><li><code>data1</code>，<code>data2</code>资源分配至<code>data_group</code></li><li><code>data_group_admin</code>角色可以对<code>data_group</code>资源组进行操作
+意味着<code>alice</code>可以对<code>data1</code>，<code>data2</code>进行操作</li></ol><blockquote><p>g 和 g2 不同为 一个为分配有，一个为分配至</p></blockquote><h3 id=文档>文档</h3><p><a href=https://casbin.org/docs/zh-CN/rbac>https://casbin.org/docs/zh-CN/rbac</a></p><footer><script src=//cdn.jsdelivr.net/combine/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js,npm/@xiee/utils/js/load-highlight.js defer></script><hr><div class=copyright>© <a href=https://mingzaily.com>mingzaily</a> 2019-2024 | <a href=https://github.com/mingzaily>Github</a></div></footer></article></body></html>

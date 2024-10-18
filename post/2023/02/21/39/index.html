@@ -1,114 +1,12 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-    <title>Golang 简易WS服务 - 服务端 - 星河</title>
-    <meta property="og:title" content="Golang 简易WS服务 - 服务端 - 星河">
-    
-    <meta name="twitter:card" content="summary">
-
-    
-    
-      
-    
-
-    
-      
-      <meta property="description" content="维护socket连接，保存客户端信息
-[&hellip;] package contorller import ( &quot;encoding/json&quot; &quot;fmt&quot; &quot;git.myscrm.cn/vr/server-yk-app-builder/model&quot; &amp;hellip;">
-      <meta property="og:description" content="维护socket连接，保存客户端信息
-[&hellip;] package contorller import ( &quot;encoding/json&quot; &quot;fmt&quot; &quot;git.myscrm.cn/vr/server-yk-app-builder/model&quot; &amp;hellip;">
-      
-    
-
-    
-    
-    
-
-    
-
-    
-    
-
-
-<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css">
-
-
-
-    <link rel="stylesheet" href="/css/style.css" />
-    <link rel="stylesheet" href="/css/fonts.css" />
-    <link rel="stylesheet" href="/css/diary.css" />
-    
-  </head>
-  <body class="post">
-    <header class="masthead">
-      <h1><a href="/">星河</a></h1>
-
-<p class="tagline">醉后不知天在水，满船清梦压星河</p>
-
-      <nav class="menu">
-  <input id="menu-check" type="checkbox" hidden/>
-  <label id="menu-label" for="menu-check" class="unselectable" hidden>
-    <span class="icon close-icon">✕</span>
-    <span class="icon open-icon">☰</span>
-    <span class="text">Menu</span>
-  </label>
-  <ul>
-  
-  
-  <li><a href="/">首页</a></li>
-  
-  <li><a href="/shuoshuo">说说</a></li>
-  
-  <li><a href="/categories/">分类</a></li>
-  
-  <li><a href="/tags/">标签</a></li>
-  
-  <li><a href="/about/">关于</a></li>
-  
-  
-  </ul>
-</nav>
-
-    </header>
-
-    <article class="main">
-      <header class="title">
-      
-<h1>Golang 简易WS服务 - 服务端</h1>
-
-
-
-<h3>
-
-mingzaily
-
-
-
-
-
-
- / 
-2023-02-21
-</h3>
-
-<hr>
-
-
-      </header>
-
-
-
-
-
-<h2 id="本次开发主要使用了gorilla-websocket软件包">本次开发主要使用了Gorilla Websocket软件包</h2>
-<h3 id="客户端结构体">客户端结构体</h3>
-<p>维护socket连接，保存客户端信息</p>
-<h4 id="代码">代码</h4>
-<pre><code class="language-golang">package contorller
+<!doctype html><html lang=zh-CN><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Golang 简易WS服务 - 服务端 - 星河</title>
+<meta property="og:title" content="Golang 简易WS服务 - 服务端 - 星河"><meta name=twitter:card content="summary"><meta property="description" content='维护socket连接，保存客户端信息
+[&mldr;] package contorller import ( "encoding/json" "fmt" "git.myscrm.cn/vr/server-yk-app-builder/model" &amp;hellip;'><meta property="og:description" content='维护socket连接，保存客户端信息
+[&mldr;] package contorller import ( "encoding/json" "fmt" "git.myscrm.cn/vr/server-yk-app-builder/model" &amp;hellip;'><link rel=stylesheet href=//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/fonts.css><link rel=stylesheet href=/css/diary.css></head><body class=post><header class=masthead><h1><a href=/>星河</a></h1><p class=tagline>醉后不知天在水，满船清梦压星河</p><nav class=menu><input id=menu-check type=checkbox hidden>
+<label id=menu-label for=menu-check class=unselectable hidden><span class="icon close-icon">✕</span>
+<span class="icon open-icon">☰</span>
+<span class=text>Menu</span></label><ul><li><a href=/>首页</a></li><li><a href=/shuoshuo>说说</a></li><li><a href=/categories/>分类</a></li><li><a href=/tags/>标签</a></li><li><a href=/about/>关于</a></li></ul></nav></header><article class=main><header class=title><h1>Golang 简易WS服务 - 服务端</h1><h3>mingzaily
+/
+2023-02-21</h3><hr></header><h2 id=本次开发主要使用了gorilla-websocket软件包>本次开发主要使用了Gorilla Websocket软件包</h2><h3 id=客户端结构体>客户端结构体</h3><p>维护socket连接，保存客户端信息</p><h4 id=代码>代码</h4><pre><code class=language-golang>package contorller
 
 import (
 	&quot;encoding/json&quot;
@@ -242,10 +140,7 @@ func (c *wsClient) unRegister() {
 	}
 }
 
-</code></pre>
-<h4 id="使用">使用</h4>
-<p>应当在控制器/入口处</p>
-<pre><code class="language-golang">func (c *cSocket) Ws(ctx *gin.Context) {
+</code></pre><h4 id=使用>使用</h4><p>应当在控制器/入口处</p><pre><code class=language-golang>func (c *cSocket) Ws(ctx *gin.Context) {
 	ws, err := c.upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
 		return nil, &quot;&quot;, err
@@ -261,11 +156,7 @@ func (c *wsClient) unRegister() {
 	go client.Write()
 	go client.Check()
 }
-</code></pre>
-<h3 id="客户端管理器">客户端管理器</h3>
-<p>管理客户端，支持登录、注销、广播</p>
-<h4 id="代码-1">代码</h4>
-<pre><code class="language-golang">package contorller
+</code></pre><h3 id=客户端管理器>客户端管理器</h3><p>管理客户端，支持登录、注销、广播</p><h4 id=代码-1>代码</h4><pre><code class=language-golang>package contorller
 
 import (
 	&quot;encoding/json&quot;
@@ -336,10 +227,7 @@ func (m *wsManager) GetClient(id string) *wsClient {
 	}
 	return nil
 }
-</code></pre>
-<h4 id="使用-1">使用</h4>
-<p>一般为main.go或启动处</p>
-<pre><code class="language-golang">func RegisterHttpRoute(serverMux *gin.Engine) error {
+</code></pre><h4 id=使用-1>使用</h4><p>一般为main.go或启动处</p><pre><code class=language-golang>func RegisterHttpRoute(serverMux *gin.Engine) error {
 	go contorller.WsManager.Start()
 	go contorller.WsManager.Quit()
 
@@ -353,45 +241,4 @@ func (m *wsManager) GetClient(id string) *wsClient {
 
 	...
 }
-</code></pre>
-
-
-
-  <footer>
-  
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<script src="//cdn.jsdelivr.net/combine/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js,npm/@xiee/utils/js/load-highlight.js" defer></script>
-
-
-
-  
-  <hr>
-  <div class="copyright">© <a href="https://mingzaily.com">mingzaily</a> 2019-2024 | <a href="https://github.com/mingzaily">Github</a></div>
-  
-  </footer>
-  </article>
-  
-  </body>
-</html>
-
+</code></pre><footer><script src=//cdn.jsdelivr.net/combine/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js,npm/@xiee/utils/js/load-highlight.js defer></script><hr><div class=copyright>© <a href=https://mingzaily.com>mingzaily</a> 2019-2024 | <a href=https://github.com/mingzaily>Github</a></div></footer></article></body></html>

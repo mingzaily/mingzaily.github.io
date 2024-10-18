@@ -1,19 +1,222 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>Php on 星河</title>
-    <link>/tags/php/</link>
-    <description>Recent content in Php on 星河</description>
-    <generator>Hugo</generator>
-    <language>zh-CN</language>
-    <lastBuildDate>Mon, 30 Mar 2020 00:00:00 +0000</lastBuildDate>
-    <atom:link href="/tags/php/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Laravel 契约和门面简单解读</title>
-      <link>/post/2020/03/30/11/</link>
-      <pubDate>Mon, 30 Mar 2020 00:00:00 +0000</pubDate>
-      <guid>/post/2020/03/30/11/</guid>
-      <description>&lt;p&gt;最近笔者正在理解Larvael服务容器、服务提供者、门面、契约的关系。&#xA;今天主要是记录自己借Laravel自带的Cache模块进行一个讲解。&lt;/p&gt;&#xA;&lt;h3 id=&#34;代码和流程&#34;&gt;代码和流程&lt;/h3&gt;&#xA;&lt;p&gt;首先我们打开&lt;code&gt;config\app.php&lt;/code&gt;中&lt;code&gt;providers&lt;/code&gt;下有一个服务提供者&lt;code&gt;Illuminate\Cache\CacheServiceProvider::class&lt;/code&gt;&lt;br&gt;&#xA;我们看看他的服务提供者是怎么写的：&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;public function register()&#xA;    {&#xA;        $this-&amp;gt;app-&amp;gt;singleton(&#39;cache&#39;, function ($app) {&#xA;            return new CacheManager($app);&#xA;        });&#xA;&#xA;        $this-&amp;gt;app-&amp;gt;singleton(&#39;cache.store&#39;, function ($app) {&#xA;            return $app[&#39;cache&#39;]-&amp;gt;driver();&#xA;        });&#xA;&#xA;        $this-&amp;gt;app-&amp;gt;singleton(&#39;cache.psr6&#39;, function ($app) {&#xA;            return new Psr16Adapter($app[&#39;cache.store&#39;]);&#xA;        });&#xA;&#xA;        $this-&amp;gt;app-&amp;gt;singleton(&#39;memcached.connector&#39;, function () {&#xA;            return new MemcachedConnector;&#xA;        });&#xA;    }&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;我们主要看&lt;code&gt;cache&lt;/code&gt;这个门面，它所单例绑定的是&lt;code&gt;CacheManager&lt;/code&gt;，我们继续深入&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code&gt;&amp;lt;?php&#xA;&#xA;namespace Illuminate\Cache;&#xA;&#xA;use Aws\DynamoDb\DynamoDbClient;&#xA;use Closure;&#xA;use Illuminate\Contracts\Cache\Factory as FactoryContract;&#xA;use Illuminate\Contracts\Cache\Store;&#xA;use Illuminate\Contracts\Events\Dispatcher as DispatcherContract;&#xA;use Illuminate\Support\Arr;&#xA;use InvalidArgumentException;&#xA;&#xA;/**&#xA; * @mixin \Illuminate\Contracts\Cache\Repository&#xA; */&#xA;class CacheManager implements FactoryContract&#xA;{&#xA;    /**&#xA;     * The application instance.&#xA;     *&#xA;     * @var \Illuminate\Contracts\Foundation\Application&#xA;     */&#xA;    protected $app;&#xA;&#xA;    /**&#xA;     * The array of resolved cache stores.&#xA;     *&#xA;     * @var array&#xA;     */&#xA;    protected $stores = [];&#xA;&#xA;    /**&#xA;     * The registered custom driver creators.&#xA;     *&#xA;     * @var array&#xA;     */&#xA;    protected $customCreators = [];&#xA;&#xA;    /**&#xA;     * Create a new Cache manager instance.&#xA;     *&#xA;     * @param  \Illuminate\Contracts\Foundation\Application  $app&#xA;     * @return void&#xA;     */&#xA;    public function __construct($app)&#xA;    {&#xA;        $this-&amp;gt;app = $app;&#xA;    }&#xA;&#xA;    /**&#xA;     * Get a cache store instance by name, wrapped in a repository.&#xA;     *&#xA;     * @param  string|null  $name&#xA;     * @return \Illuminate\Contracts\Cache\Repository&#xA;     */&#xA;    public function store($name = null)&#xA;    {&#xA;        $name = $name ?: $this-&amp;gt;getDefaultDriver();&#xA;&#xA;        return $this-&amp;gt;stores[$name] = $this-&amp;gt;get($name);&#xA;    }&#xA;&#xA;    /**&#xA;     * Get a cache driver instance.&#xA;     *&#xA;     * @param  string|null  $driver&#xA;     * @return \Illuminate\Contracts\Cache\Repository&#xA;     */&#xA;    public function driver($driver = null)&#xA;    {&#xA;        return $this-&amp;gt;store($driver);&#xA;    }&#xA;&#xA;    /**&#xA;     * Attempt to get the store from the local cache.&#xA;     *&#xA;     * @param  string  $name&#xA;     * @return \Illuminate\Contracts\Cache\Repository&#xA;     */&#xA;    protected function get($name)&#xA;    {&#xA;        return $this-&amp;gt;stores[$name] ?? $this-&amp;gt;resolve($name);&#xA;    }&#xA;&#xA;    /**&#xA;     * Resolve the given store.&#xA;     *&#xA;     * @param  string  $name&#xA;     * @return \Illuminate\Contracts\Cache\Repository&#xA;     *&#xA;     * @throws \InvalidArgumentException&#xA;     */&#xA;    protected function resolve($name)&#xA;    {&#xA;        $config = $this-&amp;gt;getConfig($name);&#xA;&#xA;        if (is_null($config)) {&#xA;            throw new InvalidArgumentException(&amp;quot;Cache store [{$name}] is not defined.&amp;quot;);&#xA;        }&#xA;&#xA;        if (isset($this-&amp;gt;customCreators[$config[&#39;driver&#39;]])) {&#xA;            return $this-&amp;gt;callCustomCreator($config);&#xA;        } else {&#xA;            $driverMethod = &#39;create&#39;.ucfirst($config[&#39;driver&#39;]).&#39;Driver&#39;;&#xA;&#xA;            if (method_exists($this, $driverMethod)) {&#xA;                return $this-&amp;gt;{$driverMethod}($config);&#xA;            } else {&#xA;                throw new InvalidArgumentException(&amp;quot;Driver [{$config[&#39;driver&#39;]}] is not supported.&amp;quot;);&#xA;            }&#xA;        }&#xA;    }&#xA;&#xA;    /**&#xA;     * Call a custom driver creator.&#xA;     *&#xA;     * @param  array  $config&#xA;     * @return mixed&#xA;     */&#xA;    protected function callCustomCreator(array $config)&#xA;    {&#xA;        return $this-&amp;gt;customCreators[$config[&#39;driver&#39;]]($this-&amp;gt;app, $config);&#xA;    }&#xA;&#xA;    ......&#xA;&#xA;    /**&#xA;     * Create an instance of the file cache driver.&#xA;     *&#xA;     * @param  array  $config&#xA;     * @return \Illuminate\Cache\Repository&#xA;     */&#xA;    protected function createFileDriver(array $config)&#xA;    {&#xA;        return $this-&amp;gt;repository(new FileStore($this-&amp;gt;app[&#39;files&#39;], $config[&#39;path&#39;]));&#xA;    }&#xA;&#xA;    /**&#xA;     * Create a new cache repository with the given implementation.&#xA;     *&#xA;     * @param  \Illuminate\Contracts\Cache\Store  $store&#xA;     * @return \Illuminate\Cache\Repository&#xA;     */&#xA;    public function repository(Store $store)&#xA;    {&#xA;        return tap(new Repository($store), function ($repository) {&#xA;            $this-&amp;gt;setEventDispatcher($repository);&#xA;        });&#xA;    }&#xA;&#xA;    /**&#xA;     * Set the event dispatcher on the given repository instance.&#xA;     *&#xA;     * @param  \Illuminate\Cache\Repository  $repository&#xA;     * @return void&#xA;     */&#xA;    protected function setEventDispatcher(Repository $repository)&#xA;    {&#xA;        if (! $this-&amp;gt;app-&amp;gt;bound(DispatcherContract::class)) {&#xA;            return;&#xA;        }&#xA;&#xA;        $repository-&amp;gt;setEventDispatcher(&#xA;            $this-&amp;gt;app[DispatcherContract::class]&#xA;        );&#xA;    }&#xA;&#xA;    ......&#xA;&#xA;    /**&#xA;     * Get the cache connection configuration.&#xA;     *&#xA;     * @param  string  $name&#xA;     * @return array&#xA;     */&#xA;    protected function getConfig($name)&#xA;    {&#xA;        return $this-&amp;gt;app[&#39;config&#39;][&amp;quot;cache.stores.{$name}&amp;quot;];&#xA;    }&#xA;&#xA;    ......&#xA;&#xA;    /**&#xA;     * Dynamically call the default driver instance.&#xA;     *&#xA;     * @param  string  $method&#xA;     * @param  array  $parameters&#xA;     * @return mixed&#xA;     */&#xA;    public function __call($method, $parameters)&#xA;    {&#xA;        return $this-&amp;gt;store()-&amp;gt;$method(...$parameters);&#xA;    }&#xA;}&#xA;&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;我们以Laravel默认的File存储讲起：&lt;/p&gt;</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Php on 星河</title><link>/tags/php/</link><description>Recent content in Php on 星河</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Mon, 30 Mar 2020 00:00:00 +0000</lastBuildDate><atom:link href="/tags/php/index.xml" rel="self" type="application/rss+xml"/><item><title>Laravel 契约和门面简单解读</title><link>/post/2020/03/30/11/</link><pubDate>Mon, 30 Mar 2020 00:00:00 +0000</pubDate><guid>/post/2020/03/30/11/</guid><description>&lt;p>最近笔者正在理解Larvael服务容器、服务提供者、门面、契约的关系。
+今天主要是记录自己借Laravel自带的Cache模块进行一个讲解。&lt;/p>
+&lt;h3 id="代码和流程">代码和流程&lt;/h3>
+&lt;p>首先我们打开&lt;code>config\app.php&lt;/code>中&lt;code>providers&lt;/code>下有一个服务提供者&lt;code>Illuminate\Cache\CacheServiceProvider::class&lt;/code>&lt;br>
+我们看看他的服务提供者是怎么写的：&lt;/p>
+&lt;pre>&lt;code>public function register()
+ {
+ $this-&amp;gt;app-&amp;gt;singleton('cache', function ($app) {
+ return new CacheManager($app);
+ });
+
+ $this-&amp;gt;app-&amp;gt;singleton('cache.store', function ($app) {
+ return $app['cache']-&amp;gt;driver();
+ });
+
+ $this-&amp;gt;app-&amp;gt;singleton('cache.psr6', function ($app) {
+ return new Psr16Adapter($app['cache.store']);
+ });
+
+ $this-&amp;gt;app-&amp;gt;singleton('memcached.connector', function () {
+ return new MemcachedConnector;
+ });
+ }
+&lt;/code>&lt;/pre>
+&lt;p>我们主要看&lt;code>cache&lt;/code>这个门面，它所单例绑定的是&lt;code>CacheManager&lt;/code>，我们继续深入&lt;/p>
+&lt;pre>&lt;code>&amp;lt;?php
+
+namespace Illuminate\Cache;
+
+use Aws\DynamoDb\DynamoDbClient;
+use Closure;
+use Illuminate\Contracts\Cache\Factory as FactoryContract;
+use Illuminate\Contracts\Cache\Store;
+use Illuminate\Contracts\Events\Dispatcher as DispatcherContract;
+use Illuminate\Support\Arr;
+use InvalidArgumentException;
+
+/**
+ * @mixin \Illuminate\Contracts\Cache\Repository
+ */
+class CacheManager implements FactoryContract
+{
+ /**
+ * The application instance.
+ *
+ * @var \Illuminate\Contracts\Foundation\Application
+ */
+ protected $app;
+
+ /**
+ * The array of resolved cache stores.
+ *
+ * @var array
+ */
+ protected $stores = [];
+
+ /**
+ * The registered custom driver creators.
+ *
+ * @var array
+ */
+ protected $customCreators = [];
+
+ /**
+ * Create a new Cache manager instance.
+ *
+ * @param \Illuminate\Contracts\Foundation\Application $app
+ * @return void
+ */
+ public function __construct($app)
+ {
+ $this-&amp;gt;app = $app;
+ }
+
+ /**
+ * Get a cache store instance by name, wrapped in a repository.
+ *
+ * @param string|null $name
+ * @return \Illuminate\Contracts\Cache\Repository
+ */
+ public function store($name = null)
+ {
+ $name = $name ?: $this-&amp;gt;getDefaultDriver();
+
+ return $this-&amp;gt;stores[$name] = $this-&amp;gt;get($name);
+ }
+
+ /**
+ * Get a cache driver instance.
+ *
+ * @param string|null $driver
+ * @return \Illuminate\Contracts\Cache\Repository
+ */
+ public function driver($driver = null)
+ {
+ return $this-&amp;gt;store($driver);
+ }
+
+ /**
+ * Attempt to get the store from the local cache.
+ *
+ * @param string $name
+ * @return \Illuminate\Contracts\Cache\Repository
+ */
+ protected function get($name)
+ {
+ return $this-&amp;gt;stores[$name] ?? $this-&amp;gt;resolve($name);
+ }
+
+ /**
+ * Resolve the given store.
+ *
+ * @param string $name
+ * @return \Illuminate\Contracts\Cache\Repository
+ *
+ * @throws \InvalidArgumentException
+ */
+ protected function resolve($name)
+ {
+ $config = $this-&amp;gt;getConfig($name);
+
+ if (is_null($config)) {
+ throw new InvalidArgumentException(&amp;quot;Cache store [{$name}] is not defined.&amp;quot;);
+ }
+
+ if (isset($this-&amp;gt;customCreators[$config['driver']])) {
+ return $this-&amp;gt;callCustomCreator($config);
+ } else {
+ $driverMethod = 'create'.ucfirst($config['driver']).'Driver';
+
+ if (method_exists($this, $driverMethod)) {
+ return $this-&amp;gt;{$driverMethod}($config);
+ } else {
+ throw new InvalidArgumentException(&amp;quot;Driver [{$config['driver']}] is not supported.&amp;quot;);
+ }
+ }
+ }
+
+ /**
+ * Call a custom driver creator.
+ *
+ * @param array $config
+ * @return mixed
+ */
+ protected function callCustomCreator(array $config)
+ {
+ return $this-&amp;gt;customCreators[$config['driver']]($this-&amp;gt;app, $config);
+ }
+
+ ......
+
+ /**
+ * Create an instance of the file cache driver.
+ *
+ * @param array $config
+ * @return \Illuminate\Cache\Repository
+ */
+ protected function createFileDriver(array $config)
+ {
+ return $this-&amp;gt;repository(new FileStore($this-&amp;gt;app['files'], $config['path']));
+ }
+
+ /**
+ * Create a new cache repository with the given implementation.
+ *
+ * @param \Illuminate\Contracts\Cache\Store $store
+ * @return \Illuminate\Cache\Repository
+ */
+ public function repository(Store $store)
+ {
+ return tap(new Repository($store), function ($repository) {
+ $this-&amp;gt;setEventDispatcher($repository);
+ });
+ }
+
+ /**
+ * Set the event dispatcher on the given repository instance.
+ *
+ * @param \Illuminate\Cache\Repository $repository
+ * @return void
+ */
+ protected function setEventDispatcher(Repository $repository)
+ {
+ if (! $this-&amp;gt;app-&amp;gt;bound(DispatcherContract::class)) {
+ return;
+ }
+
+ $repository-&amp;gt;setEventDispatcher(
+ $this-&amp;gt;app[DispatcherContract::class]
+ );
+ }
+
+ ......
+
+ /**
+ * Get the cache connection configuration.
+ *
+ * @param string $name
+ * @return array
+ */
+ protected function getConfig($name)
+ {
+ return $this-&amp;gt;app['config'][&amp;quot;cache.stores.{$name}&amp;quot;];
+ }
+
+ ......
+
+ /**
+ * Dynamically call the default driver instance.
+ *
+ * @param string $method
+ * @param array $parameters
+ * @return mixed
+ */
+ public function __call($method, $parameters)
+ {
+ return $this-&amp;gt;store()-&amp;gt;$method(...$parameters);
+ }
+}
+
+&lt;/code>&lt;/pre>
+&lt;p>我们以Laravel默认的File存储讲起：&lt;/p></description></item></channel></rss>

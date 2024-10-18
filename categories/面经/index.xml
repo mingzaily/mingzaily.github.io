@@ -1,19 +1,15 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>面经 on 星河</title>
-    <link>/categories/%E9%9D%A2%E7%BB%8F/</link>
-    <description>Recent content in 面经 on 星河</description>
-    <generator>Hugo</generator>
-    <language>zh-CN</language>
-    <lastBuildDate>Wed, 15 Mar 2023 00:00:00 +0000</lastBuildDate>
-    <atom:link href="/categories/%E9%9D%A2%E7%BB%8F/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Go 面试题目</title>
-      <link>/post/2023/03/15/44/</link>
-      <pubDate>Wed, 15 Mar 2023 00:00:00 +0000</pubDate>
-      <guid>/post/2023/03/15/44/</guid>
-      <description>&lt;ol&gt;&#xA;&lt;li&gt;slice 底层原理、扩容机制&lt;/li&gt;&#xA;&lt;li&gt;map 底层原理、扩容机制&lt;/li&gt;&#xA;&lt;li&gt;channel 底层原理 环形缓存+双队列&lt;/li&gt;&#xA;&lt;li&gt;context 原理、应用场景&lt;/li&gt;&#xA;&lt;li&gt;GMP模型&lt;/li&gt;&#xA;&lt;li&gt;GC策略&lt;/li&gt;&#xA;&lt;li&gt;new 和 make 的区别&lt;/li&gt;&#xA;&lt;li&gt;map 如何知道自己处于竞争状态&lt;/li&gt;&#xA;&lt;li&gt;defer、recover、panic 实现原理&lt;/li&gt;&#xA;&lt;li&gt;二叉树 树的遍历 前中后序遍历、深度和广度&lt;/li&gt;&#xA;&lt;li&gt;平衡二叉树 左旋转、右旋转&lt;/li&gt;&#xA;&lt;li&gt;分布式一致性 ACID、CAP、BASE理论推荐&lt;/li&gt;&#xA;&lt;li&gt;Mysql 分库分表方式&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>面经 on 星河</title><link>/categories/%E9%9D%A2%E7%BB%8F/</link><description>Recent content in 面经 on 星河</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Wed, 15 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="/categories/%E9%9D%A2%E7%BB%8F/index.xml" rel="self" type="application/rss+xml"/><item><title>Go 面试题目</title><link>/post/2023/03/15/44/</link><pubDate>Wed, 15 Mar 2023 00:00:00 +0000</pubDate><guid>/post/2023/03/15/44/</guid><description>&lt;ol>
+&lt;li>slice 底层原理、扩容机制&lt;/li>
+&lt;li>map 底层原理、扩容机制&lt;/li>
+&lt;li>channel 底层原理 环形缓存+双队列&lt;/li>
+&lt;li>context 原理、应用场景&lt;/li>
+&lt;li>GMP模型&lt;/li>
+&lt;li>GC策略&lt;/li>
+&lt;li>new 和 make 的区别&lt;/li>
+&lt;li>map 如何知道自己处于竞争状态&lt;/li>
+&lt;li>defer、recover、panic 实现原理&lt;/li>
+&lt;li>二叉树 树的遍历 前中后序遍历、深度和广度&lt;/li>
+&lt;li>平衡二叉树 左旋转、右旋转&lt;/li>
+&lt;li>分布式一致性 ACID、CAP、BASE理论推荐&lt;/li>
+&lt;li>Mysql 分库分表方式&lt;/li>
+&lt;/ol></description></item></channel></rss>

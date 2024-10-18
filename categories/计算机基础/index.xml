@@ -1,33 +1,207 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>计算机基础 on 星河</title>
-    <link>/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/</link>
-    <description>Recent content in 计算机基础 on 星河</description>
-    <generator>Hugo</generator>
-    <language>zh-CN</language>
-    <lastBuildDate>Mon, 05 Feb 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>RSA 加解密</title>
-      <link>/post/2024/02/05/55/</link>
-      <pubDate>Mon, 05 Feb 2024 00:00:00 +0000</pubDate>
-      <guid>/post/2024/02/05/55/</guid>
-      <description>&lt;h2 id=&#34;rsa-加密简介&#34;&gt;RSA 加密简介&lt;/h2&gt;&#xA;&lt;p&gt;RSA 加密是一种非对称加密。可以在不直接传递密钥的情况下，完成解密。这能够确保信息的安全性，避免了直接传递密钥所造成的被破解的风险。是由一对密钥来进行加解密的过程，分别称为公钥和私钥。两者之间有数学相关，该加密算法的原理就是对一极大整数做因数分解的困难性来保证安全性。通常个人保存私钥，公钥是公开的（可能同时多人持有）。&lt;/p&gt;&#xA;&lt;h2 id=&#34;rsa-加密签名区别&#34;&gt;RSA 加密、签名区别&lt;/h2&gt;&#xA;&lt;p&gt;加密和签名都是为了安全性考虑，但略有不同。常有人问加密和签名是用私钥还是公钥？其实都是对加密和签名的作用有所混淆。简单的说，加密是为了防止信息被泄露，而签名是为了防止信息被篡改。这里举 2 个例子说明。&lt;/p&gt;&#xA;&lt;h4 id=&#34;第一个场景战场上b-要给-a-传递一条消息内容为某一指令&#34;&gt;第一个场景：战场上，B 要给 A 传递一条消息，内容为某一指令。&lt;/h4&gt;&#xA;&lt;p&gt;RSA 的加密过程如下：&lt;/p&gt;&#xA;&lt;p&gt;（1）A 生成一对密钥（公钥和私钥），私钥不公开，A 自己保留。公钥为公开的，任何人可以获取。&lt;/p&gt;&#xA;&lt;p&gt;（2）A 传递自己的公钥给 B，B 用 A 的公钥对消息进行加密。&lt;/p&gt;&#xA;&lt;p&gt;（3）A 接收到 B 加密的消息，利用 A 自己的私钥对消息进行解密。&lt;/p&gt;&#xA;&lt;p&gt;在这个过程中，只有 2 次传递过程，第一次是 A 传递公钥给 B，第二次是 B 传递加密消息给 A，即使都被敌方截获，也没有危险性，因为只有 A 的私钥才能对消息进行解密，防止了消息内容的泄露。&lt;/p&gt;&#xA;&lt;h4 id=&#34;第二个场景a-收到-b-发的消息后需要进行回复收到&#34;&gt;第二个场景：A 收到 B 发的消息后，需要进行回复“收到”。&lt;/h4&gt;&#xA;&lt;p&gt;RSA 签名的过程如下：&lt;/p&gt;&#xA;&lt;p&gt;（1）A 生成一对密钥（公钥和私钥），私钥不公开，A 自己保留。公钥为公开的，任何人可以获取。&lt;/p&gt;&#xA;&lt;p&gt;（2）A 用自己的私钥对消息加签，形成签名，并将加签的消息和消息本身一起传递给 B。&lt;/p&gt;&#xA;&lt;p&gt;（3）B 收到消息后，在获取 A 的公钥进行验签，如果验签出来的内容与消息本身一致，证明消息是 A 回复的。&lt;/p&gt;&#xA;&lt;p&gt;在这个过程中，只有 2 次传递过程，第一次是 A 传递加签的消息和消息本身给 B，第二次是 B 获取 A 的公钥，即使都被敌方截获，也没有危险性，因为只有 A 的私钥才能对消息进行签名，即使知道了消息内容，也无法伪造带签名的回复给 B，防止了消息内容的篡改。&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>数据库</title>
-      <link>/post/2019/10/18/8/</link>
-      <pubDate>Fri, 18 Oct 2019 00:00:00 +0000</pubDate>
-      <guid>/post/2019/10/18/8/</guid>
-      <description>&lt;h2 id=&#34;数据库架构&#34;&gt;数据库架构&lt;/h2&gt;&#xA;&lt;h3 id=&#34;数据库设计&#34;&gt;数据库设计&lt;/h3&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;程序实例&#xA;&lt;ul&gt;&#xA;&lt;li&gt;存储管理&lt;/li&gt;&#xA;&lt;li&gt;缓存机制&lt;/li&gt;&#xA;&lt;li&gt;SQL 解析&lt;/li&gt;&#xA;&lt;li&gt;日志管理&lt;/li&gt;&#xA;&lt;li&gt;权限划分&lt;/li&gt;&#xA;&lt;li&gt;容灾机制&lt;/li&gt;&#xA;&lt;li&gt;索引管理&lt;/li&gt;&#xA;&lt;li&gt;锁管理&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;存储（文件系统）&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h3 id=&#34;索引模块&#34;&gt;索引模块&lt;/h3&gt;&#xA;&lt;p&gt;官方方对索引的定义为：索引是帮助 MySQL 高效获取数据的数据结构&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;为什么要用索引&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;快速查询数据&lt;/li&gt;&#xA;&lt;li&gt;保证数据的唯一性&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;索引的优缺点&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;优点&#xA;&lt;ul&gt;&#xA;&lt;li&gt;大大加快数据检索速度&lt;/li&gt;&#xA;&lt;li&gt;创建唯一索引，保证数据库表中每行数据的唯一性&lt;/li&gt;&#xA;&lt;li&gt;加速表之间的连接&lt;/li&gt;&#xA;&lt;li&gt;减少查询中分组和排序的时间&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;缺点&#xA;&lt;ul&gt;&#xA;&lt;li&gt;需要占用物理空间&lt;/li&gt;&#xA;&lt;li&gt;对表中数据进行增加、删除和修改时索引也要更新，降低了数据维护速度&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;什么样的信息能成为索引&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;主键、唯一键以及普通键等等&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;索引的数据结构&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;生成索引，建立二叉查找树进行二分查找 效率 O(logn)&lt;/li&gt;&#xA;&lt;li&gt;生成索引，建立 B-Tree 进行查找 效率 O(logn)&#xA;&lt;ul&gt;&#xA;&lt;li&gt;B-Tree&lt;/li&gt;&#xA;&lt;li&gt;根节点至少包括两个孩子&lt;/li&gt;&#xA;&lt;li&gt;树中每个节点最多含有 m 个孩子(m&amp;gt;=2)&lt;/li&gt;&#xA;&lt;li&gt;除根节点和叶子节点外，其他每个节点至少有 ceil(m/2)个孩子&lt;/li&gt;&#xA;&lt;li&gt;所有叶子节点都位于同一层&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;生成索引，建立 B+-Tree 进行查找（主流）&#xA;&lt;ul&gt;&#xA;&lt;li&gt;定义基本与 B-Tree 一致&lt;/li&gt;&#xA;&lt;li&gt;非叶子节点的子树指针与关键字个数相同&lt;/li&gt;&#xA;&lt;li&gt;非叶子节点仅使用索引，数据都保存在叶子节点中&lt;/li&gt;&#xA;&lt;li&gt;所有叶子节点均有一个链指针指向下一个叶子节点&lt;/li&gt;&#xA;&lt;li&gt;B+-Tree 更适合用来做存储引擎&#xA;&lt;ul&gt;&#xA;&lt;li&gt;B+树的磁盘读写代价更低&lt;/li&gt;&#xA;&lt;li&gt;B+树的查询效率更加稳定&lt;/li&gt;&#xA;&lt;li&gt;B+树更有利于对数据库的扫描&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;生成索引，建立 Hash 结构进行查找&#xA;&lt;ul&gt;&#xA;&lt;li&gt;查询效率更高&lt;/li&gt;&#xA;&lt;li&gt;缺点&#xA;&lt;ul&gt;&#xA;&lt;li&gt;仅仅能满足&amp;quot;=&amp;quot;，&amp;ldquo;IN&amp;rdquo;，不能使用范围查询&lt;/li&gt;&#xA;&lt;li&gt;无法被用来避免数据的排序操作&lt;/li&gt;&#xA;&lt;li&gt;不能利用部分索引键查询&lt;/li&gt;&#xA;&lt;li&gt;不能避免表扫码&lt;/li&gt;&#xA;&lt;li&gt;遇到大量 Hash 值相等的情况后性能并不一定就会比 B-Tree 索引高&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;BitMap 索引&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;密集索引和稀疏索引的区别&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>计算机网络</title>
-      <link>/post/2019/10/18/7/</link>
-      <pubDate>Fri, 18 Oct 2019 00:00:00 +0000</pubDate>
-      <guid>/post/2019/10/18/7/</guid>
-      <description>&lt;h2 id=&#34;网络基础&#34;&gt;网络基础&lt;/h2&gt;&#xA;&lt;h3 id=&#34;osi-模型&#34;&gt;OSI 模型&lt;/h3&gt;&#xA;&lt;h4 id=&#34;表格&#34;&gt;表格&lt;/h4&gt;&#xA;&lt;table&gt;&#xA;  &lt;thead&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;th&gt;概念层&lt;/th&gt;&#xA;          &lt;th&gt;数据单位&lt;/th&gt;&#xA;          &lt;th&gt;作用&lt;/th&gt;&#xA;          &lt;th&gt;设备&lt;/th&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/thead&gt;&#xA;  &lt;tbody&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;物理层&lt;/td&gt;&#xA;          &lt;td&gt;比特&lt;/td&gt;&#xA;          &lt;td&gt;提供光纤标准、传送数据的通路，传输比特流&lt;/td&gt;&#xA;          &lt;td&gt;网线等等&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;数据链路层&lt;/td&gt;&#xA;          &lt;td&gt;数据帧&lt;/td&gt;&#xA;          &lt;td&gt;帧定界和帧同步;顺序控制，指对帧的收发顺序的控制；差错检测和恢复；APR、RARP 协议&lt;/td&gt;&#xA;          &lt;td&gt;交互机、网桥&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;网络层&lt;/td&gt;&#xA;          &lt;td&gt;数据分组或数据包&lt;/td&gt;&#xA;          &lt;td&gt;两个主机系统之间提供连接和路径选择&lt;/td&gt;&#xA;          &lt;td&gt;路由器&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;传输层&lt;/td&gt;&#xA;          &lt;td&gt;报文段&lt;/td&gt;&#xA;          &lt;td&gt;定义传输协议和端口；分段传输，到达目的地址后重组&lt;/td&gt;&#xA;          &lt;td&gt;-&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;会话层&lt;/td&gt;&#xA;          &lt;td&gt;-&lt;/td&gt;&#xA;          &lt;td&gt;管理应用程序间的通信&lt;/td&gt;&#xA;          &lt;td&gt;-&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;表示层&lt;/td&gt;&#xA;          &lt;td&gt;-&lt;/td&gt;&#xA;          &lt;td&gt;把应用层提供的信息变换为能够共同理解的形式、保证各系统、应用可以读取&lt;/td&gt;&#xA;          &lt;td&gt;-&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;应用层&lt;/td&gt;&#xA;          &lt;td&gt;-&lt;/td&gt;&#xA;          &lt;td&gt;应用层协议，如 HTTP 协议&lt;/td&gt;&#xA;          &lt;td&gt;-&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/tbody&gt;&#xA;&lt;/table&gt;&#xA;&lt;h4 id=&#34;总结&#34;&gt;总结&lt;/h4&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;下面 4 层（物理层、数据链路层、网络层和传输层）主要提供数据传输和交换功能，即以节点到节点之间的通信为主；&lt;/li&gt;&#xA;&lt;li&gt;第 4 层(传输成 TCP/UDP)作为上下两部分的桥梁，是整个网络体系结构中最关键的部分；&lt;/li&gt;&#xA;&lt;li&gt;简言之，下 4 层主要完成通信子网的功能，上 3 层主要完成资源子网的功能。&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h3 id=&#34;tcpip-四层模型&#34;&gt;TCP/IP 四层模型&lt;/h3&gt;&#xA;&lt;p&gt;TCP/IP 又叫网际协议群，可以说是 OSI 模型的实现，强调在计算机上实现协议应该开发哪种程序&lt;/p&gt;&#xA;&lt;table&gt;&#xA;  &lt;thead&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;th&gt;概念层&lt;/th&gt;&#xA;          &lt;th&gt;TCP/IP 协议群&lt;/th&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/thead&gt;&#xA;  &lt;tbody&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;应用层&lt;/td&gt;&#xA;          &lt;td&gt;FTP、HTTP、Telnt&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;数据链路层&lt;/td&gt;&#xA;          &lt;td&gt;TCP、UDP&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;网络层&lt;/td&gt;&#xA;          &lt;td&gt;IP、ICMP、RIP、OSFF，ICMP，BGF&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;网络接口层/链路层&lt;/td&gt;&#xA;          &lt;td&gt;ISO、IEEE 标准&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/tbody&gt;&#xA;&lt;/table&gt;&#xA;&lt;h2 id=&#34;tcp-三次握手四次挥手&#34;&gt;TCP 三次握手&amp;amp;四次挥手&lt;/h2&gt;&#xA;&lt;h3 id=&#34;报文格式&#34;&gt;报文格式&lt;/h3&gt;&#xA;&lt;p&gt;TCP Tags&lt;/p&gt;</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>计算机基础 on 星河</title><link>/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/</link><description>Recent content in 计算机基础 on 星河</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Mon, 05 Feb 2024 00:00:00 +0000</lastBuildDate><atom:link href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/index.xml" rel="self" type="application/rss+xml"/><item><title>RSA 加解密</title><link>/post/2024/02/05/55/</link><pubDate>Mon, 05 Feb 2024 00:00:00 +0000</pubDate><guid>/post/2024/02/05/55/</guid><description>&lt;h2 id="rsa-加密简介">RSA 加密简介&lt;/h2>
+&lt;p>RSA 加密是一种非对称加密。可以在不直接传递密钥的情况下，完成解密。这能够确保信息的安全性，避免了直接传递密钥所造成的被破解的风险。是由一对密钥来进行加解密的过程，分别称为公钥和私钥。两者之间有数学相关，该加密算法的原理就是对一极大整数做因数分解的困难性来保证安全性。通常个人保存私钥，公钥是公开的（可能同时多人持有）。&lt;/p>
+&lt;h2 id="rsa-加密签名区别">RSA 加密、签名区别&lt;/h2>
+&lt;p>加密和签名都是为了安全性考虑，但略有不同。常有人问加密和签名是用私钥还是公钥？其实都是对加密和签名的作用有所混淆。简单的说，加密是为了防止信息被泄露，而签名是为了防止信息被篡改。这里举 2 个例子说明。&lt;/p>
+&lt;h4 id="第一个场景战场上b-要给-a-传递一条消息内容为某一指令">第一个场景：战场上，B 要给 A 传递一条消息，内容为某一指令。&lt;/h4>
+&lt;p>RSA 的加密过程如下：&lt;/p>
+&lt;p>（1）A 生成一对密钥（公钥和私钥），私钥不公开，A 自己保留。公钥为公开的，任何人可以获取。&lt;/p>
+&lt;p>（2）A 传递自己的公钥给 B，B 用 A 的公钥对消息进行加密。&lt;/p>
+&lt;p>（3）A 接收到 B 加密的消息，利用 A 自己的私钥对消息进行解密。&lt;/p>
+&lt;p>在这个过程中，只有 2 次传递过程，第一次是 A 传递公钥给 B，第二次是 B 传递加密消息给 A，即使都被敌方截获，也没有危险性，因为只有 A 的私钥才能对消息进行解密，防止了消息内容的泄露。&lt;/p>
+&lt;h4 id="第二个场景a-收到-b-发的消息后需要进行回复收到">第二个场景：A 收到 B 发的消息后，需要进行回复“收到”。&lt;/h4>
+&lt;p>RSA 签名的过程如下：&lt;/p>
+&lt;p>（1）A 生成一对密钥（公钥和私钥），私钥不公开，A 自己保留。公钥为公开的，任何人可以获取。&lt;/p>
+&lt;p>（2）A 用自己的私钥对消息加签，形成签名，并将加签的消息和消息本身一起传递给 B。&lt;/p>
+&lt;p>（3）B 收到消息后，在获取 A 的公钥进行验签，如果验签出来的内容与消息本身一致，证明消息是 A 回复的。&lt;/p>
+&lt;p>在这个过程中，只有 2 次传递过程，第一次是 A 传递加签的消息和消息本身给 B，第二次是 B 获取 A 的公钥，即使都被敌方截获，也没有危险性，因为只有 A 的私钥才能对消息进行签名，即使知道了消息内容，也无法伪造带签名的回复给 B，防止了消息内容的篡改。&lt;/p></description></item><item><title>数据库</title><link>/post/2019/10/18/8/</link><pubDate>Fri, 18 Oct 2019 00:00:00 +0000</pubDate><guid>/post/2019/10/18/8/</guid><description>&lt;h2 id="数据库架构">数据库架构&lt;/h2>
+&lt;h3 id="数据库设计">数据库设计&lt;/h3>
+&lt;ul>
+&lt;li>程序实例
+&lt;ul>
+&lt;li>存储管理&lt;/li>
+&lt;li>缓存机制&lt;/li>
+&lt;li>SQL 解析&lt;/li>
+&lt;li>日志管理&lt;/li>
+&lt;li>权限划分&lt;/li>
+&lt;li>容灾机制&lt;/li>
+&lt;li>索引管理&lt;/li>
+&lt;li>锁管理&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>存储（文件系统）&lt;/li>
+&lt;/ul>
+&lt;h3 id="索引模块">索引模块&lt;/h3>
+&lt;p>官方方对索引的定义为：索引是帮助 MySQL 高效获取数据的数据结构&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>为什么要用索引&lt;/p>
+&lt;ul>
+&lt;li>快速查询数据&lt;/li>
+&lt;li>保证数据的唯一性&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>索引的优缺点&lt;/p>
+&lt;ul>
+&lt;li>优点
+&lt;ul>
+&lt;li>大大加快数据检索速度&lt;/li>
+&lt;li>创建唯一索引，保证数据库表中每行数据的唯一性&lt;/li>
+&lt;li>加速表之间的连接&lt;/li>
+&lt;li>减少查询中分组和排序的时间&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>缺点
+&lt;ul>
+&lt;li>需要占用物理空间&lt;/li>
+&lt;li>对表中数据进行增加、删除和修改时索引也要更新，降低了数据维护速度&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>什么样的信息能成为索引&lt;/p>
+&lt;ul>
+&lt;li>主键、唯一键以及普通键等等&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>索引的数据结构&lt;/p>
+&lt;ul>
+&lt;li>生成索引，建立二叉查找树进行二分查找 效率 O(logn)&lt;/li>
+&lt;li>生成索引，建立 B-Tree 进行查找 效率 O(logn)
+&lt;ul>
+&lt;li>B-Tree&lt;/li>
+&lt;li>根节点至少包括两个孩子&lt;/li>
+&lt;li>树中每个节点最多含有 m 个孩子(m&amp;gt;=2)&lt;/li>
+&lt;li>除根节点和叶子节点外，其他每个节点至少有 ceil(m/2)个孩子&lt;/li>
+&lt;li>所有叶子节点都位于同一层&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>生成索引，建立 B+-Tree 进行查找（主流）
+&lt;ul>
+&lt;li>定义基本与 B-Tree 一致&lt;/li>
+&lt;li>非叶子节点的子树指针与关键字个数相同&lt;/li>
+&lt;li>非叶子节点仅使用索引，数据都保存在叶子节点中&lt;/li>
+&lt;li>所有叶子节点均有一个链指针指向下一个叶子节点&lt;/li>
+&lt;li>B+-Tree 更适合用来做存储引擎
+&lt;ul>
+&lt;li>B+树的磁盘读写代价更低&lt;/li>
+&lt;li>B+树的查询效率更加稳定&lt;/li>
+&lt;li>B+树更有利于对数据库的扫描&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>生成索引，建立 Hash 结构进行查找
+&lt;ul>
+&lt;li>查询效率更高&lt;/li>
+&lt;li>缺点
+&lt;ul>
+&lt;li>仅仅能满足&amp;quot;=&amp;quot;，&amp;ldquo;IN&amp;rdquo;，不能使用范围查询&lt;/li>
+&lt;li>无法被用来避免数据的排序操作&lt;/li>
+&lt;li>不能利用部分索引键查询&lt;/li>
+&lt;li>不能避免表扫码&lt;/li>
+&lt;li>遇到大量 Hash 值相等的情况后性能并不一定就会比 B-Tree 索引高&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>BitMap 索引&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>密集索引和稀疏索引的区别&lt;/p></description></item><item><title>计算机网络</title><link>/post/2019/10/18/7/</link><pubDate>Fri, 18 Oct 2019 00:00:00 +0000</pubDate><guid>/post/2019/10/18/7/</guid><description>&lt;h2 id="网络基础">网络基础&lt;/h2>
+&lt;h3 id="osi-模型">OSI 模型&lt;/h3>
+&lt;h4 id="表格">表格&lt;/h4>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>概念层&lt;/th>
+ &lt;th>数据单位&lt;/th>
+ &lt;th>作用&lt;/th>
+ &lt;th>设备&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>物理层&lt;/td>
+ &lt;td>比特&lt;/td>
+ &lt;td>提供光纤标准、传送数据的通路，传输比特流&lt;/td>
+ &lt;td>网线等等&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>数据链路层&lt;/td>
+ &lt;td>数据帧&lt;/td>
+ &lt;td>帧定界和帧同步;顺序控制，指对帧的收发顺序的控制；差错检测和恢复；APR、RARP 协议&lt;/td>
+ &lt;td>交互机、网桥&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>网络层&lt;/td>
+ &lt;td>数据分组或数据包&lt;/td>
+ &lt;td>两个主机系统之间提供连接和路径选择&lt;/td>
+ &lt;td>路由器&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>传输层&lt;/td>
+ &lt;td>报文段&lt;/td>
+ &lt;td>定义传输协议和端口；分段传输，到达目的地址后重组&lt;/td>
+ &lt;td>-&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>会话层&lt;/td>
+ &lt;td>-&lt;/td>
+ &lt;td>管理应用程序间的通信&lt;/td>
+ &lt;td>-&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>表示层&lt;/td>
+ &lt;td>-&lt;/td>
+ &lt;td>把应用层提供的信息变换为能够共同理解的形式、保证各系统、应用可以读取&lt;/td>
+ &lt;td>-&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>应用层&lt;/td>
+ &lt;td>-&lt;/td>
+ &lt;td>应用层协议，如 HTTP 协议&lt;/td>
+ &lt;td>-&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h4 id="总结">总结&lt;/h4>
+&lt;ul>
+&lt;li>下面 4 层（物理层、数据链路层、网络层和传输层）主要提供数据传输和交换功能，即以节点到节点之间的通信为主；&lt;/li>
+&lt;li>第 4 层(传输成 TCP/UDP)作为上下两部分的桥梁，是整个网络体系结构中最关键的部分；&lt;/li>
+&lt;li>简言之，下 4 层主要完成通信子网的功能，上 3 层主要完成资源子网的功能。&lt;/li>
+&lt;/ul>
+&lt;h3 id="tcpip-四层模型">TCP/IP 四层模型&lt;/h3>
+&lt;p>TCP/IP 又叫网际协议群，可以说是 OSI 模型的实现，强调在计算机上实现协议应该开发哪种程序&lt;/p>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>概念层&lt;/th>
+ &lt;th>TCP/IP 协议群&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>应用层&lt;/td>
+ &lt;td>FTP、HTTP、Telnt&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>数据链路层&lt;/td>
+ &lt;td>TCP、UDP&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>网络层&lt;/td>
+ &lt;td>IP、ICMP、RIP、OSFF，ICMP，BGF&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>网络接口层/链路层&lt;/td>
+ &lt;td>ISO、IEEE 标准&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="tcp-三次握手四次挥手">TCP 三次握手&amp;amp;四次挥手&lt;/h2>
+&lt;h3 id="报文格式">报文格式&lt;/h3>
+&lt;p>TCP Tags&lt;/p></description></item></channel></rss>

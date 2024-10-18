@@ -1,128 +1,13 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-    <title>统一管理 Protocol Buffer，API 大仓设计与实现 - 星河</title>
-    <meta property="og:title" content="统一管理 Protocol Buffer，API 大仓设计与实现 - 星河">
-    
-    <meta name="twitter:card" content="summary">
-
-    
-    
-      
-    
-
-    
-      
-      <meta property="description" content="目前公司采用 protocol buffer 作为 IDL，虽然可以根据 API 定义，轻松生成客户端和服务端的代码。但是对于跨项目的接口，会增加项目之间的耦合性。例如 A 服务对外提供了一个接口，B 服务去调用。那么就需要根据 A 服务的 proto 文件，生成客户端代码，并拷贝给 B。如果联调期间，A 服务改动了该接口，还需重复前面的步骤，非常繁琐
-[&hellip;] 常见的几种解决方案，煎 &amp;hellip;">
-      <meta property="og:description" content="目前公司采用 protocol buffer 作为 IDL，虽然可以根据 API 定义，轻松生成客户端和服务端的代码。但是对于跨项目的接口，会增加项目之间的耦合性。例如 A 服务对外提供了一个接口，B 服务去调用。那么就需要根据 A 服务的 proto 文件，生成客户端代码，并拷贝给 B。如果联调期间，A 服务改动了该接口，还需重复前面的步骤，非常繁琐
-[&hellip;] 常见的几种解决方案，煎 &amp;hellip;">
-      
-    
-
-    
-    
-    
-    <meta name="twitter:image" content="https://s21.ax1x.com/2024/05/25/pklP974.png">
-    
-    
-
-    
-
-    
-    
-
-
-<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css">
-
-
-
-    <link rel="stylesheet" href="/css/style.css" />
-    <link rel="stylesheet" href="/css/fonts.css" />
-    <link rel="stylesheet" href="/css/diary.css" />
-    
-  </head>
-  <body class="post">
-    <header class="masthead">
-      <h1><a href="/">星河</a></h1>
-
-<p class="tagline">醉后不知天在水，满船清梦压星河</p>
-
-      <nav class="menu">
-  <input id="menu-check" type="checkbox" hidden/>
-  <label id="menu-label" for="menu-check" class="unselectable" hidden>
-    <span class="icon close-icon">✕</span>
-    <span class="icon open-icon">☰</span>
-    <span class="text">Menu</span>
-  </label>
-  <ul>
-  
-  
-  <li><a href="/">首页</a></li>
-  
-  <li><a href="/shuoshuo">说说</a></li>
-  
-  <li><a href="/categories/">分类</a></li>
-  
-  <li><a href="/tags/">标签</a></li>
-  
-  <li><a href="/about/">关于</a></li>
-  
-  
-  </ul>
-</nav>
-
-    </header>
-
-    <article class="main">
-      <header class="title">
-      
-<h1>统一管理 Protocol Buffer，API 大仓设计与实现</h1>
-
-
-
-<h3>
-
-mingzaily
-
-
-
-
-
-
- / 
-2024-05-25
-</h3>
-
-<hr>
-
-
-      </header>
-
-
-
-
-
-<h2 id="背景">背景</h2>
-<p>目前公司采用 protocol buffer 作为 IDL，虽然可以根据 API 定义，轻松生成客户端和服务端的代码。但是对于跨项目的接口，会增加项目之间的耦合性。例如 A 服务对外提供了一个接口，B 服务去调用。那么就需要根据 A 服务的 proto 文件，生成客户端代码，并拷贝给 B。如果联调期间，A 服务改动了该接口，还需重复前面的步骤，非常繁琐</p>
-<h2 id="方案">方案</h2>
-<p>常见的几种解决方案，煎鱼大佬已经描述得很详细了（<a href="https://mp.weixin.qq.com/s/cBXZjg_R8MLFDJyFtpjVVQ">真是头疼，Proto 代码到底放哪里？</a>）</p>
-<ul>
-<li>方案一：api 大仓 + git submodule（b 站）</li>
-<li>方案二：api 大仓 + git submodule + 每个项目生成代码专有仓库</li>
-<li>方案三：每个项目都有一个 api 仓库，包含生成的代码</li>
-<li>方案四：api 大仓 + api 生成代码的集中仓库</li>
-</ul>
-<p>具体方案的优缺点 yuyy 博主已经写清楚了。
-权衡了下，和博主一样选择方案四。</p>
-<h2 id="具体实现">具体实现</h2>
-<p><a href="https://imgse.com/i/pklP974"><img src="https://s21.ax1x.com/2024/05/25/pklP974.png" alt="pklP974.png"></a></p>
-<h3 id="drone-文件">DRONE 文件</h3>
-<pre><code class="language-shell">$ tree -L 1
+<!doctype html><html lang=zh-CN><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>统一管理 Protocol Buffer，API 大仓设计与实现 - 星河</title>
+<meta property="og:title" content="统一管理 Protocol Buffer，API 大仓设计与实现 - 星河"><meta name=twitter:card content="summary"><meta property="description" content="目前公司采用 protocol buffer 作为 IDL，虽然可以根据 API 定义，轻松生成客户端和服务端的代码。但是对于跨项目的接口，会增加项目之间的耦合性。例如 A 服务对外提供了一个接口，B 服务去调用。那么就需要根据 A 服务的 proto 文件，生成客户端代码，并拷贝给 B。如果联调期间，A 服务改动了该接口，还需重复前面的步骤，非常繁琐
+[&mldr;] 常见的几种解决方案，煎 &amp;hellip;"><meta property="og:description" content="目前公司采用 protocol buffer 作为 IDL，虽然可以根据 API 定义，轻松生成客户端和服务端的代码。但是对于跨项目的接口，会增加项目之间的耦合性。例如 A 服务对外提供了一个接口，B 服务去调用。那么就需要根据 A 服务的 proto 文件，生成客户端代码，并拷贝给 B。如果联调期间，A 服务改动了该接口，还需重复前面的步骤，非常繁琐
+[&mldr;] 常见的几种解决方案，煎 &amp;hellip;"><meta name=twitter:image content="https://s21.ax1x.com/2024/05/25/pklP974.png"><link rel=stylesheet href=//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/fonts.css><link rel=stylesheet href=/css/diary.css></head><body class=post><header class=masthead><h1><a href=/>星河</a></h1><p class=tagline>醉后不知天在水，满船清梦压星河</p><nav class=menu><input id=menu-check type=checkbox hidden>
+<label id=menu-label for=menu-check class=unselectable hidden><span class="icon close-icon">✕</span>
+<span class="icon open-icon">☰</span>
+<span class=text>Menu</span></label><ul><li><a href=/>首页</a></li><li><a href=/shuoshuo>说说</a></li><li><a href=/categories/>分类</a></li><li><a href=/tags/>标签</a></li><li><a href=/about/>关于</a></li></ul></nav></header><article class=main><header class=title><h1>统一管理 Protocol Buffer，API 大仓设计与实现</h1><h3>mingzaily
+/
+2024-05-25</h3><hr></header><h2 id=背景>背景</h2><p>目前公司采用 protocol buffer 作为 IDL，虽然可以根据 API 定义，轻松生成客户端和服务端的代码。但是对于跨项目的接口，会增加项目之间的耦合性。例如 A 服务对外提供了一个接口，B 服务去调用。那么就需要根据 A 服务的 proto 文件，生成客户端代码，并拷贝给 B。如果联调期间，A 服务改动了该接口，还需重复前面的步骤，非常繁琐</p><h2 id=方案>方案</h2><p>常见的几种解决方案，煎鱼大佬已经描述得很详细了（<a href=https://mp.weixin.qq.com/s/cBXZjg_R8MLFDJyFtpjVVQ>真是头疼，Proto 代码到底放哪里？</a>）</p><ul><li>方案一：api 大仓 + git submodule（b 站）</li><li>方案二：api 大仓 + git submodule + 每个项目生成代码专有仓库</li><li>方案三：每个项目都有一个 api 仓库，包含生成的代码</li><li>方案四：api 大仓 + api 生成代码的集中仓库</li></ul><p>具体方案的优缺点 yuyy 博主已经写清楚了。
+权衡了下，和博主一样选择方案四。</p><h2 id=具体实现>具体实现</h2><p><a href=https://imgse.com/i/pklP974><img src=https://s21.ax1x.com/2024/05/25/pklP974.png alt=pklP974.png></a></p><h3 id=drone-文件>DRONE 文件</h3><pre><code class=language-shell>$ tree -L 1
 .
 ├── Dockerfile
 ├── Makefile
@@ -159,9 +44,7 @@ mingzaily
 └── timer
 
 26 directories, 7 files
-</code></pre>
-<h3 id="droneyaml">.drone.yaml</h3>
-<pre><code class="language-yaml">kind: pipeline
+</code></pre><h3 id=droneyaml>.drone.yaml</h3><pre><code class=language-yaml>kind: pipeline
 type: docker
 name: apis
 
@@ -227,12 +110,9 @@ volumes: # 定义流水线挂载目录，用于共享数据
   - name: buf-cache
     host:
       path: /home/docker/drone/buf/.cache # 从宿主机中挂载的目录
-</code></pre>
-<p><code>ssh_private_key</code> 经过<code>echo '私钥文件' | base64</code>生成，并配置在 DRONE 的 Secrets 上
+</code></pre><p><code>ssh_private_key</code> 经过<code>echo '私钥文件' | base64</code>生成，并配置在 DRONE 的 Secrets 上
 <code>buf-cache</code> 是 drone 挂载硬盘，设置 buf 缓存，加快构建速度
-<code>reg.xxxx.com/golang/apis-generate-go:1.0.0</code> 封装的一个包含 buf 命令的镜像</p>
-<h3 id="apis-generate-go-dockerfile-基础镜像">apis-generate-go DOCKERFILE 基础镜像</h3>
-<pre><code class="language-dockerfile">FROM golang:1.21-alpine
+<code>reg.xxxx.com/golang/apis-generate-go:1.0.0</code> 封装的一个包含 buf 命令的镜像</p><h3 id=apis-generate-go-dockerfile-基础镜像>apis-generate-go DOCKERFILE 基础镜像</h3><pre><code class=language-dockerfile>FROM golang:1.21-alpine
 
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories &amp;&amp; \
     apk add --no-cache git protobuf curl openssh-server openssh-client &amp;&amp; \
@@ -254,11 +134,7 @@ RUN go env -w GOPROXY=https://goproxy.cn,direct &amp;&amp; \
     go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest &amp;&amp; \
     go install github.com/go-kratos/kratos/cmd/protoc-gen-go-http/v2@latest
 
-</code></pre>
-<p>构建指令 <code>docker build --platform linux/amd64 -t reg.xxxx.com/golang/apis-generate-go:1.0.0</code></p>
-<h3 id="编译-proto-文件">编译 proto 文件</h3>
-<h4 id="apis-gogenyml">apis-go.gen.yml</h4>
-<pre><code class="language-yml">version: v1
+</code></pre><p>构建指令 <code>docker build --platform linux/amd64 -t reg.xxxx.com/golang/apis-generate-go:1.0.0</code></p><h3 id=编译-proto-文件>编译 proto 文件</h3><h4 id=apis-gogenyml>apis-go.gen.yml</h4><pre><code class=language-yml>version: v1
 managed:
   enabled: true
 
@@ -276,9 +152,7 @@ plugins:
     out: apis-go
     opt:
       - paths=source_relative
-</code></pre>
-<h4 id="apis-gosh">apis-go.sh</h4>
-<pre><code class="language-sh">#!/bin/bash
+</code></pre><h4 id=apis-gosh>apis-go.sh</h4><pre><code class=language-sh>#!/bin/bash
 
 echo &quot;---- buf generate ----&quot;
 echo &quot;+ buf generate&quot;
@@ -340,10 +214,7 @@ printf &quot;+ git push\n&quot;
 git push --set-upstream origin &quot;${DRONE_BRANCH}&quot;
 
 echo &quot;---- 同步成功 ----&quot;
-</code></pre>
-<h3 id="生成-swagger">生成 swagger</h3>
-<h4 id="apis-swaggergenyml">apis-swagger.gen.yml</h4>
-<pre><code class="language-yml">version: v1
+</code></pre><h3 id=生成-swagger>生成 swagger</h3><h4 id=apis-swaggergenyml>apis-swagger.gen.yml</h4><pre><code class=language-yml>version: v1
 managed:
   enabled: true
 
@@ -353,9 +224,7 @@ plugins:
     opt:
       - disable_default_responses=false
       - json_names_for_fields=false
-</code></pre>
-<h4 id="apis-swaggersh">.apis-swagger.sh</h4>
-<pre><code class="language-sh">#!/bin/bash
+</code></pre><h4 id=apis-swaggersh>.apis-swagger.sh</h4><pre><code class=language-sh>#!/bin/bash
 
 echo &quot;---- buf generate ----&quot;
 echo &quot;+ buf generate&quot;
@@ -399,50 +268,4 @@ for PROJECT in ${PROJECTS}; do
   fi
 done
 
-</code></pre>
-<h2 id="参考">参考</h2>
-<ol>
-<li><a href="https://yuyy.info/?p=1980">Gitlab CI/CD 实践六：统一管理 protocol buffer，API 大仓设计与实现</a></li>
-<li><a href="https://mp.weixin.qq.com/s/cBXZjg_R8MLFDJyFtpjVVQ">真是头疼，Proto 代码到底放哪里？</a></li>
-</ol>
-
-
-
-  <footer>
-  
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<script src="//cdn.jsdelivr.net/combine/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js,npm/@xiee/utils/js/load-highlight.js" defer></script>
-
-
-
-  
-  <hr>
-  <div class="copyright">© <a href="https://mingzaily.com">mingzaily</a> 2019-2024 | <a href="https://github.com/mingzaily">Github</a></div>
-  
-  </footer>
-  </article>
-  
-  </body>
-</html>
-
+</code></pre><h2 id=参考>参考</h2><ol><li><a href="https://yuyy.info/?p=1980">Gitlab CI/CD 实践六：统一管理 protocol buffer，API 大仓设计与实现</a></li><li><a href=https://mp.weixin.qq.com/s/cBXZjg_R8MLFDJyFtpjVVQ>真是头疼，Proto 代码到底放哪里？</a></li></ol><footer><script src=//cdn.jsdelivr.net/combine/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js,npm/@xiee/utils/js/load-highlight.js defer></script><hr><div class=copyright>© <a href=https://mingzaily.com>mingzaily</a> 2019-2024 | <a href=https://github.com/mingzaily>Github</a></div></footer></article></body></html>

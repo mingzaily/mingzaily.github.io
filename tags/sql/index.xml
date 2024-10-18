@@ -1,19 +1,404 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>Sql on 星河</title>
-    <link>/tags/sql/</link>
-    <description>Recent content in Sql on 星河</description>
-    <generator>Hugo</generator>
-    <language>zh-CN</language>
-    <lastBuildDate>Fri, 18 Feb 2022 00:00:00 +0000</lastBuildDate>
-    <atom:link href="/tags/sql/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>SQL提交规范</title>
-      <link>/post/2022/02/18/27/</link>
-      <pubDate>Fri, 18 Feb 2022 00:00:00 +0000</pubDate>
-      <guid>/post/2022/02/18/27/</guid>
-      <description>&lt;h4 id=&#34;规范&#34;&gt;规范&lt;/h4&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;插入数据不可重复，使用 &lt;code&gt;REPLACE INTO&lt;/code&gt; 替代 &lt;code&gt;INSERT INTO&lt;/code&gt;&#xA;&lt;pre&gt;&lt;code class=&#34;language-sql&#34;&gt;REPLACE INTO tableName(columnName, ...) VALUES(...)&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;添加表时，使用 &lt;code&gt;IF NOT EXISTS&lt;/code&gt;&#xA;&lt;pre&gt;&lt;code class=&#34;language-sql&#34;&gt;CREATE TABLE IF NOT EXISTS XXX&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;删除表时，可以使用 &lt;code&gt;IF EXISTS&lt;/code&gt;&#xA;&lt;pre&gt;&lt;code class=&#34;language-sql&#34;&gt;DROP TABLE IF EXISTS XXX&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;管理字段和索引时，使用存储过程&#xA;&lt;pre&gt;&lt;code class=&#34;language-sql&#34;&gt;CALL AddColumnIfNotExists (&#39;ztc_room&#39;, &#39;introduction&#39;, &#39;VARCHAR(1000) NOT NULL DEFAULT \&#39;\&#39; COMMENT \&#39;房源介绍\&#39;&#39;);&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h4 id=&#34;常用存储过程&#34;&gt;常用存储过程&lt;/h4&gt;&#xA;&lt;table&gt;&#xA;  &lt;thead&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;th&gt;过程名&lt;/th&gt;&#xA;          &lt;th&gt;含义&lt;/th&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/thead&gt;&#xA;  &lt;tbody&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;AddColumnIfNotExists&lt;/td&gt;&#xA;          &lt;td&gt;添加字段（表名，字段名，字段描述）&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;UpdateColumnIfExists&lt;/td&gt;&#xA;          &lt;td&gt;更新字段（表名，字段名，字段描述）&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;DropColumnIfExists&lt;/td&gt;&#xA;          &lt;td&gt;删除字段（表名，字段名）&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;CreateIndexIfNotExists&lt;/td&gt;&#xA;          &lt;td&gt;添加普通索引（表名，字段名）&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;CreateUniqueIndexIfNotExists&lt;/td&gt;&#xA;          &lt;td&gt;添加唯一索引（表名，字段名）&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;CreateIndexIfNotExistsWithColumns&lt;/td&gt;&#xA;          &lt;td&gt;添加组合普通索引（表名，索引名，字段名）&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;CreateUniqueIndexIfNotExistsWithColumns&lt;/td&gt;&#xA;          &lt;td&gt;添加组合唯一索引（表名，索引名，字段名）&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;DropIndexIfExists&lt;/td&gt;&#xA;          &lt;td&gt;删除索引（表名，索引名）&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/tbody&gt;&#xA;&lt;/table&gt;&#xA;&lt;pre&gt;&lt;code&gt;DELIMITER  $$&#xA;# AddColumnIfNotExists 添加字段&#xA;DROP&#xA;    PROCEDURE IF EXISTS AddColumnIfNotExists$$&#xA;CREATE PROCEDURE `AddColumnIfNotExists`(&#xA;    IN tableName varchar(100), IN columnName varchar(100),&#xA;    IN dbType varchar(100))&#xA;BEGIN&#xA;    DECLARE _tableCount INT;&#xA;    DECLARE _columnCount INT;&#xA;&#xA;    SET&#xA;        _tableCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM INFORMATION_SCHEMA.TABLES&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName);&#xA;&#xA;    SET&#xA;        _columnCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM INFORMATION_SCHEMA.COLUMNS&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName&#xA;            AND COLUMN_NAME = columnName);&#xA;    IF _tableCount = 1&#xA;        AND _columnCount = 0&#xA;    THEN&#xA;        SET&#xA;            @_sqlText = CONCAT(&#39; ALTER TABLE `&#39;,&#xA;                            tableName, &#39;` ADD COLUMN `&#39;,&#xA;                            columnName, &#39;` &#39;,&#xA;                            dbType);&#xA;        PREPARE stmt1&#xA;            FROM&#xA;            @_sqlText;&#xA;        EXECUTE stmt1;&#xA;        DEALLOCATE PREPARE stmt1;&#xA;    END IF;&#xA;END$$&#xA;&#xA;# UpdateColumnIfExists 更新字段&#xA;DROP&#xA;    PROCEDURE IF EXISTS UpdateColumnIfExists$$&#xA;CREATE PROCEDURE `UpdateColumnIfExists`(&#xA;    IN tableName varchar(100), IN columnName varchar(100),&#xA;    IN dbType varchar(100))&#xA;BEGIN&#xA;    DECLARE _columnCount INT;&#xA;&#xA;    SET&#xA;        _columnCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM INFORMATION_SCHEMA.COLUMNS&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName&#xA;            AND COLUMN_NAME = columnName);&#xA;    IF&#xA;        _columnCount = 1 THEN&#xA;        SET&#xA;            @_sqlText = CONCAT(&#39; ALTER TABLE `&#39;,&#xA;                            tableName, &#39;` MODIFY COLUMN `&#39;,&#xA;                            columnName, &#39;` &#39;,&#xA;                            dbType&#xA;                );&#xA;        PREPARE stmt1&#xA;            FROM&#xA;            @_sqlText;&#xA;        EXECUTE stmt1; DEALLOCATE PREPARE stmt1;&#xA;    END IF;&#xA;END$$&#xA;&#xA;# DropColumnIfExists 删除字段&#xA;DROP&#xA;    PROCEDURE IF EXISTS DropColumnIfExists$$&#xA;CREATE PROCEDURE `DropColumnIfExists`(&#xA;    IN tableName varchar(100), IN columnName varchar(100))&#xA;BEGIN&#xA;    DECLARE _columnCount INT;&#xA;&#xA;    SET&#xA;        _columnCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM INFORMATION_SCHEMA.COLUMNS&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName&#xA;            AND COLUMN_NAME = columnName);&#xA;    IF _columnCount = 1&#xA;    THEN&#xA;        SET&#xA;            @_sqlText = CONCAT(&#39; ALTER TABLE &#39;,&#xA;                            tableName, &#39; DROP COLUMN &#39;,&#xA;                            columnName, &#39; ;&#39;&#xA;                );&#xA;        PREPARE stmt1&#xA;            FROM&#xA;            @_sqlText;&#xA;        EXECUTE stmt1;&#xA;        DEALLOCATE PREPARE stmt1;&#xA;    END IF;&#xA;END$$&#xA;&#xA;# CreateIndexIfNotExists 添加普通索引&#xA;DROP&#xA;    PROCEDURE IF EXISTS CreateIndexIfNotExists$$&#xA;CREATE PROCEDURE `CreateIndexIfNotExists`(&#xA;    IN tableName varchar(100), IN columnName varchar(100))&#xA;BEGIN&#xA;    DECLARE _tableCount INT;&#xA;    DECLARE _indexCount INT;&#xA;&#xA;    SET&#xA;        _tableCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM INFORMATION_SCHEMA.TABLES&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName);&#xA;&#xA;    SET&#xA;        _indexCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM information_schema.statistics&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName&#xA;            AND INDEX_NAME = CONCAT(&#39;IX_&#39;,&#xA;                                    columnName)&#xA;        );&#xA;    IF _tableCount = 1&#xA;        AND _indexCount = 0&#xA;    THEN&#xA;        SET&#xA;            @_sqlText = CONCAT(&#39; CREATE INDEX `IX_&#39;,&#xA;                            columnName, &#39;` ON `&#39;,&#xA;                            tableName, &#39;`(`&#39;,&#xA;                            columnName, &#39;` ASC);&#39;&#xA;                );&#xA;        PREPARE stmt1&#xA;            FROM&#xA;            @_sqlText;&#xA;        EXECUTE stmt1; DEALLOCATE PREPARE stmt1;&#xA;    END IF;&#xA;END$$&#xA;&#xA;# CreateUniqueIndexIfNotExists 添加唯一索引&#xA;DROP&#xA;    PROCEDURE IF EXISTS CreateUniqueIndexIfNotExists$$&#xA;CREATE PROCEDURE `CreateUniqueIndexIfNotExists`(&#xA;    IN tableName varchar(100), IN columnName varchar(100))&#xA;BEGIN&#xA;    DECLARE _tableCount INT;&#xA;    DECLARE _indexCount INT;&#xA;&#xA;    SET&#xA;        _tableCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM INFORMATION_SCHEMA.TABLES&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName);&#xA;&#xA;    SET&#xA;        _indexCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM information_schema.statistics&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName&#xA;            AND INDEX_NAME = CONCAT(&#39;IX_&#39;,&#xA;                                    columnName)&#xA;        );&#xA;    IF _tableCount = 1&#xA;        AND _indexCount = 0&#xA;    THEN&#xA;        SET&#xA;            @_sqlText = CONCAT(&#39; CREATE UNIQUE INDEX `IX_&#39;,&#xA;                            columnName, &#39;` ON `&#39;,&#xA;                            tableName, &#39;`(`&#39;,&#xA;                            columnName, &#39;` ASC);&#39;&#xA;                );&#xA;        PREPARE stmt1&#xA;            FROM&#xA;            @_sqlText;&#xA;        EXECUTE stmt1; DEALLOCATE PREPARE stmt1;&#xA;    END IF;&#xA;END$$&#xA;&#xA;# CreateIndexIfNotExistsWithColumns 添加组合普通索引&#xA;DROP&#xA;    PROCEDURE IF EXISTS CreateIndexIfNotExistsWithColumns$$&#xA;CREATE PROCEDURE `CreateIndexIfNotExistsWithColumns`(&#xA;    IN tableName varchar(200), IN indexName VARCHAR(200),&#xA;    IN columnName VARCHAR(200))&#xA;BEGIN&#xA;    DECLARE _tableCount INT;&#xA;    DECLARE _indexCount INT;&#xA;&#xA;    SET&#xA;        _tableCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM INFORMATION_SCHEMA.TABLES&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName);&#xA;&#xA;    SET&#xA;        _indexCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM information_schema.statistics&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName&#xA;            AND INDEX_NAME = CONCAT(&#39;IX_&#39;,&#xA;                                    indexName)&#xA;        );&#xA;    IF _tableCount = 1&#xA;        AND _indexCount = 0&#xA;    THEN&#xA;        SET&#xA;            @_sqlText = CONCAT(&#39; CREATE INDEX `IX_&#39;,&#xA;                            indexName, &#39;` ON `&#39;,&#xA;                            tableName, &#39;`(&#39;,&#xA;                            columnName, &#39;);&#xA;&#39;);&#xA;        PREPARE stmt1&#xA;            FROM&#xA;            @_sqlText;&#xA;        EXECUTE stmt1;&#xA;        DEALLOCATE PREPARE stmt1;&#xA;    END IF;&#xA;END$$&#xA;&#xA;# CreateUniqueIndexIfNotExistsWithColumns 添加组合唯一索引&#xA;DROP&#xA;    PROCEDURE IF EXISTS CreateUniqueIndexIfNotExistsWithColumns$$&#xA;CREATE PROCEDURE `CreateUniqueIndexIfNotExistsWithColumns`(&#xA;    IN tableName VARCHAR(200), IN indexName VARCHAR(200),&#xA;    IN columnName VARCHAR(200))&#xA;BEGIN&#xA;    DECLARE _tableCount INT;&#xA;    DECLARE _indexCount INT;&#xA;&#xA;    SET&#xA;        _tableCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM INFORMATION_SCHEMA.TABLES&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName);&#xA;&#xA;    SET&#xA;        _indexCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM information_schema.statistics&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName&#xA;            AND INDEX_NAME = CONCAT(&#39;IX_&#39;,&#xA;                                    indexName)&#xA;        );&#xA;    IF _tableCount = 1&#xA;        AND _indexCount = 0&#xA;    THEN&#xA;        SET&#xA;            @_sqlText = CONCAT(&#39; CREATE UNIQUE INDEX `IX_&#39;,&#xA;                            indexName, &#39;` ON `&#39;,&#xA;                            tableName, &#39;`(&#39;,&#xA;                            columnName, &#39;);&#xA;&#39;);&#xA;        PREPARE stmt1&#xA;            FROM&#xA;            @_sqlText;&#xA;        EXECUTE stmt1;&#xA;        DEALLOCATE PREPARE stmt1;&#xA;    END IF;&#xA;END$$&#xA;&#xA;# DropIndexIfExists 删除索引&#xA;DROP&#xA;    PROCEDURE IF EXISTS DropIndexIfExists$$&#xA;CREATE PROCEDURE `DropIndexIfExists`(&#xA;    IN tableName varchar(100), IN indexName varchar(100))&#xA;BEGIN&#xA;    DECLARE _indexCount INT;&#xA;&#xA;    SET&#xA;        _indexCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM information_schema.statistics&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName&#xA;            AND INDEX_NAME = CONCAT(&#39;IX_&#39;,&#xA;                                    indexName)&#xA;        );&#xA;    IF _indexCount &amp;gt; 0&#xA;    THEN&#xA;        SET&#xA;            @_sqlText = CONCAT(&#39; DROP INDEX `IX_&#39;,&#xA;                            indexName, &#39;` ON `&#39;,&#xA;                            tableName, &#39;`; &#39;&#xA;                );&#xA;        PREPARE stmt1&#xA;            FROM&#xA;            @_sqlText;&#xA;        EXECUTE stmt1; DEALLOCATE PREPARE stmt1;&#xA;    END IF;&#xA;END$$&#xA;&#xA;DELIMITER ;&#xA;&lt;/code&gt;&lt;/pre&gt;</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Sql on 星河</title><link>/tags/sql/</link><description>Recent content in Sql on 星河</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Fri, 18 Feb 2022 00:00:00 +0000</lastBuildDate><atom:link href="/tags/sql/index.xml" rel="self" type="application/rss+xml"/><item><title>SQL提交规范</title><link>/post/2022/02/18/27/</link><pubDate>Fri, 18 Feb 2022 00:00:00 +0000</pubDate><guid>/post/2022/02/18/27/</guid><description>&lt;h4 id="规范">规范&lt;/h4>
+&lt;ol>
+&lt;li>插入数据不可重复，使用 &lt;code>REPLACE INTO&lt;/code> 替代 &lt;code>INSERT INTO&lt;/code>
+&lt;pre>&lt;code class="language-sql">REPLACE INTO tableName(columnName, ...) VALUES(...)
+&lt;/code>&lt;/pre>
+&lt;/li>
+&lt;li>添加表时，使用 &lt;code>IF NOT EXISTS&lt;/code>
+&lt;pre>&lt;code class="language-sql">CREATE TABLE IF NOT EXISTS XXX
+&lt;/code>&lt;/pre>
+&lt;/li>
+&lt;li>删除表时，可以使用 &lt;code>IF EXISTS&lt;/code>
+&lt;pre>&lt;code class="language-sql">DROP TABLE IF EXISTS XXX
+&lt;/code>&lt;/pre>
+&lt;/li>
+&lt;li>管理字段和索引时，使用存储过程
+&lt;pre>&lt;code class="language-sql">CALL AddColumnIfNotExists ('ztc_room', 'introduction', 'VARCHAR(1000) NOT NULL DEFAULT \'\' COMMENT \'房源介绍\'');
+&lt;/code>&lt;/pre>
+&lt;/li>
+&lt;/ol>
+&lt;h4 id="常用存储过程">常用存储过程&lt;/h4>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>过程名&lt;/th>
+ &lt;th>含义&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>AddColumnIfNotExists&lt;/td>
+ &lt;td>添加字段（表名，字段名，字段描述）&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>UpdateColumnIfExists&lt;/td>
+ &lt;td>更新字段（表名，字段名，字段描述）&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>DropColumnIfExists&lt;/td>
+ &lt;td>删除字段（表名，字段名）&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>CreateIndexIfNotExists&lt;/td>
+ &lt;td>添加普通索引（表名，字段名）&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>CreateUniqueIndexIfNotExists&lt;/td>
+ &lt;td>添加唯一索引（表名，字段名）&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>CreateIndexIfNotExistsWithColumns&lt;/td>
+ &lt;td>添加组合普通索引（表名，索引名，字段名）&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>CreateUniqueIndexIfNotExistsWithColumns&lt;/td>
+ &lt;td>添加组合唯一索引（表名，索引名，字段名）&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>DropIndexIfExists&lt;/td>
+ &lt;td>删除索引（表名，索引名）&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;pre>&lt;code>DELIMITER $$
+# AddColumnIfNotExists 添加字段
+DROP
+ PROCEDURE IF EXISTS AddColumnIfNotExists$$
+CREATE PROCEDURE `AddColumnIfNotExists`(
+ IN tableName varchar(100), IN columnName varchar(100),
+ IN dbType varchar(100))
+BEGIN
+ DECLARE _tableCount INT;
+ DECLARE _columnCount INT;
+
+ SET
+ _tableCount = (
+ SELECT COUNT(1)
+ FROM INFORMATION_SCHEMA.TABLES
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName);
+
+ SET
+ _columnCount = (
+ SELECT COUNT(1)
+ FROM INFORMATION_SCHEMA.COLUMNS
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName
+ AND COLUMN_NAME = columnName);
+ IF _tableCount = 1
+ AND _columnCount = 0
+ THEN
+ SET
+ @_sqlText = CONCAT(' ALTER TABLE `',
+ tableName, '` ADD COLUMN `',
+ columnName, '` ',
+ dbType);
+ PREPARE stmt1
+ FROM
+ @_sqlText;
+ EXECUTE stmt1;
+ DEALLOCATE PREPARE stmt1;
+ END IF;
+END$$
+
+# UpdateColumnIfExists 更新字段
+DROP
+ PROCEDURE IF EXISTS UpdateColumnIfExists$$
+CREATE PROCEDURE `UpdateColumnIfExists`(
+ IN tableName varchar(100), IN columnName varchar(100),
+ IN dbType varchar(100))
+BEGIN
+ DECLARE _columnCount INT;
+
+ SET
+ _columnCount = (
+ SELECT COUNT(1)
+ FROM INFORMATION_SCHEMA.COLUMNS
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName
+ AND COLUMN_NAME = columnName);
+ IF
+ _columnCount = 1 THEN
+ SET
+ @_sqlText = CONCAT(' ALTER TABLE `',
+ tableName, '` MODIFY COLUMN `',
+ columnName, '` ',
+ dbType
+ );
+ PREPARE stmt1
+ FROM
+ @_sqlText;
+ EXECUTE stmt1; DEALLOCATE PREPARE stmt1;
+ END IF;
+END$$
+
+# DropColumnIfExists 删除字段
+DROP
+ PROCEDURE IF EXISTS DropColumnIfExists$$
+CREATE PROCEDURE `DropColumnIfExists`(
+ IN tableName varchar(100), IN columnName varchar(100))
+BEGIN
+ DECLARE _columnCount INT;
+
+ SET
+ _columnCount = (
+ SELECT COUNT(1)
+ FROM INFORMATION_SCHEMA.COLUMNS
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName
+ AND COLUMN_NAME = columnName);
+ IF _columnCount = 1
+ THEN
+ SET
+ @_sqlText = CONCAT(' ALTER TABLE ',
+ tableName, ' DROP COLUMN ',
+ columnName, ' ;'
+ );
+ PREPARE stmt1
+ FROM
+ @_sqlText;
+ EXECUTE stmt1;
+ DEALLOCATE PREPARE stmt1;
+ END IF;
+END$$
+
+# CreateIndexIfNotExists 添加普通索引
+DROP
+ PROCEDURE IF EXISTS CreateIndexIfNotExists$$
+CREATE PROCEDURE `CreateIndexIfNotExists`(
+ IN tableName varchar(100), IN columnName varchar(100))
+BEGIN
+ DECLARE _tableCount INT;
+ DECLARE _indexCount INT;
+
+ SET
+ _tableCount = (
+ SELECT COUNT(1)
+ FROM INFORMATION_SCHEMA.TABLES
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName);
+
+ SET
+ _indexCount = (
+ SELECT COUNT(1)
+ FROM information_schema.statistics
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName
+ AND INDEX_NAME = CONCAT('IX_',
+ columnName)
+ );
+ IF _tableCount = 1
+ AND _indexCount = 0
+ THEN
+ SET
+ @_sqlText = CONCAT(' CREATE INDEX `IX_',
+ columnName, '` ON `',
+ tableName, '`(`',
+ columnName, '` ASC);'
+ );
+ PREPARE stmt1
+ FROM
+ @_sqlText;
+ EXECUTE stmt1; DEALLOCATE PREPARE stmt1;
+ END IF;
+END$$
+
+# CreateUniqueIndexIfNotExists 添加唯一索引
+DROP
+ PROCEDURE IF EXISTS CreateUniqueIndexIfNotExists$$
+CREATE PROCEDURE `CreateUniqueIndexIfNotExists`(
+ IN tableName varchar(100), IN columnName varchar(100))
+BEGIN
+ DECLARE _tableCount INT;
+ DECLARE _indexCount INT;
+
+ SET
+ _tableCount = (
+ SELECT COUNT(1)
+ FROM INFORMATION_SCHEMA.TABLES
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName);
+
+ SET
+ _indexCount = (
+ SELECT COUNT(1)
+ FROM information_schema.statistics
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName
+ AND INDEX_NAME = CONCAT('IX_',
+ columnName)
+ );
+ IF _tableCount = 1
+ AND _indexCount = 0
+ THEN
+ SET
+ @_sqlText = CONCAT(' CREATE UNIQUE INDEX `IX_',
+ columnName, '` ON `',
+ tableName, '`(`',
+ columnName, '` ASC);'
+ );
+ PREPARE stmt1
+ FROM
+ @_sqlText;
+ EXECUTE stmt1; DEALLOCATE PREPARE stmt1;
+ END IF;
+END$$
+
+# CreateIndexIfNotExistsWithColumns 添加组合普通索引
+DROP
+ PROCEDURE IF EXISTS CreateIndexIfNotExistsWithColumns$$
+CREATE PROCEDURE `CreateIndexIfNotExistsWithColumns`(
+ IN tableName varchar(200), IN indexName VARCHAR(200),
+ IN columnName VARCHAR(200))
+BEGIN
+ DECLARE _tableCount INT;
+ DECLARE _indexCount INT;
+
+ SET
+ _tableCount = (
+ SELECT COUNT(1)
+ FROM INFORMATION_SCHEMA.TABLES
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName);
+
+ SET
+ _indexCount = (
+ SELECT COUNT(1)
+ FROM information_schema.statistics
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName
+ AND INDEX_NAME = CONCAT('IX_',
+ indexName)
+ );
+ IF _tableCount = 1
+ AND _indexCount = 0
+ THEN
+ SET
+ @_sqlText = CONCAT(' CREATE INDEX `IX_',
+ indexName, '` ON `',
+ tableName, '`(',
+ columnName, ');
+');
+ PREPARE stmt1
+ FROM
+ @_sqlText;
+ EXECUTE stmt1;
+ DEALLOCATE PREPARE stmt1;
+ END IF;
+END$$
+
+# CreateUniqueIndexIfNotExistsWithColumns 添加组合唯一索引
+DROP
+ PROCEDURE IF EXISTS CreateUniqueIndexIfNotExistsWithColumns$$
+CREATE PROCEDURE `CreateUniqueIndexIfNotExistsWithColumns`(
+ IN tableName VARCHAR(200), IN indexName VARCHAR(200),
+ IN columnName VARCHAR(200))
+BEGIN
+ DECLARE _tableCount INT;
+ DECLARE _indexCount INT;
+
+ SET
+ _tableCount = (
+ SELECT COUNT(1)
+ FROM INFORMATION_SCHEMA.TABLES
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName);
+
+ SET
+ _indexCount = (
+ SELECT COUNT(1)
+ FROM information_schema.statistics
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName
+ AND INDEX_NAME = CONCAT('IX_',
+ indexName)
+ );
+ IF _tableCount = 1
+ AND _indexCount = 0
+ THEN
+ SET
+ @_sqlText = CONCAT(' CREATE UNIQUE INDEX `IX_',
+ indexName, '` ON `',
+ tableName, '`(',
+ columnName, ');
+');
+ PREPARE stmt1
+ FROM
+ @_sqlText;
+ EXECUTE stmt1;
+ DEALLOCATE PREPARE stmt1;
+ END IF;
+END$$
+
+# DropIndexIfExists 删除索引
+DROP
+ PROCEDURE IF EXISTS DropIndexIfExists$$
+CREATE PROCEDURE `DropIndexIfExists`(
+ IN tableName varchar(100), IN indexName varchar(100))
+BEGIN
+ DECLARE _indexCount INT;
+
+ SET
+ _indexCount = (
+ SELECT COUNT(1)
+ FROM information_schema.statistics
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName
+ AND INDEX_NAME = CONCAT('IX_',
+ indexName)
+ );
+ IF _indexCount &amp;gt; 0
+ THEN
+ SET
+ @_sqlText = CONCAT(' DROP INDEX `IX_',
+ indexName, '` ON `',
+ tableName, '`; '
+ );
+ PREPARE stmt1
+ FROM
+ @_sqlText;
+ EXECUTE stmt1; DEALLOCATE PREPARE stmt1;
+ END IF;
+END$$
+
+DELIMITER ;
+&lt;/code>&lt;/pre></description></item></channel></rss>

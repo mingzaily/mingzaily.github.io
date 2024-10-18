@@ -1,33 +1,563 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>方案设计 on 星河</title>
-    <link>/categories/%E6%96%B9%E6%A1%88%E8%AE%BE%E8%AE%A1/</link>
-    <description>Recent content in 方案设计 on 星河</description>
-    <generator>Hugo</generator>
-    <language>zh-CN</language>
-    <lastBuildDate>Sat, 25 May 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="/categories/%E6%96%B9%E6%A1%88%E8%AE%BE%E8%AE%A1/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>统一管理 Protocol Buffer，API 大仓设计与实现</title>
-      <link>/post/2024/05/25/59/</link>
-      <pubDate>Sat, 25 May 2024 00:00:00 +0000</pubDate>
-      <guid>/post/2024/05/25/59/</guid>
-      <description>&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;&#xA;&lt;p&gt;目前公司采用 protocol buffer 作为 IDL，虽然可以根据 API 定义，轻松生成客户端和服务端的代码。但是对于跨项目的接口，会增加项目之间的耦合性。例如 A 服务对外提供了一个接口，B 服务去调用。那么就需要根据 A 服务的 proto 文件，生成客户端代码，并拷贝给 B。如果联调期间，A 服务改动了该接口，还需重复前面的步骤，非常繁琐&lt;/p&gt;&#xA;&lt;h2 id=&#34;方案&#34;&gt;方案&lt;/h2&gt;&#xA;&lt;p&gt;常见的几种解决方案，煎鱼大佬已经描述得很详细了（&lt;a href=&#34;https://mp.weixin.qq.com/s/cBXZjg_R8MLFDJyFtpjVVQ&#34;&gt;真是头疼，Proto 代码到底放哪里？&lt;/a&gt;）&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;方案一：api 大仓 + git submodule（b 站）&lt;/li&gt;&#xA;&lt;li&gt;方案二：api 大仓 + git submodule + 每个项目生成代码专有仓库&lt;/li&gt;&#xA;&lt;li&gt;方案三：每个项目都有一个 api 仓库，包含生成的代码&lt;/li&gt;&#xA;&lt;li&gt;方案四：api 大仓 + api 生成代码的集中仓库&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;具体方案的优缺点 yuyy 博主已经写清楚了。&#xA;权衡了下，和博主一样选择方案四。&lt;/p&gt;&#xA;&lt;h2 id=&#34;具体实现&#34;&gt;具体实现&lt;/h2&gt;&#xA;&lt;p&gt;&lt;a href=&#34;https://imgse.com/i/pklP974&#34;&gt;&lt;img src=&#34;https://s21.ax1x.com/2024/05/25/pklP974.png&#34; alt=&#34;pklP974.png&#34;&gt;&lt;/a&gt;&lt;/p&gt;&#xA;&lt;h3 id=&#34;drone-文件&#34;&gt;DRONE 文件&lt;/h3&gt;&#xA;&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ tree -L 1&#xA;.&#xA;├── Dockerfile&#xA;├── Makefile&#xA;├── README.md&#xA;├── apis-go.gen.yml&#xA;├── apis-go.sh&#xA;├── apis-swagger.gen.yml&#xA;├── apis-swagger.sh&#xA;├── auth-center&#xA;├── budget-center&#xA;├── common&#xA;├── consume-order&#xA;├── consume-quota-center&#xA;├── consume-rule-to-third&#xA;├── datacenter&#xA;├── fino-multi-env-center&#xA;├── finobase&#xA;├── finoconsume&#xA;├── invoice&#xA;├── mng-center&#xA;├── mq-center&#xA;├── notify-center&#xA;├── org-arch-center&#xA;├── org-asset-center&#xA;├── org-order-center&#xA;├── org-recharge-center&#xA;├── org-settle-center&#xA;├── pubsvc&#xA;├── pushcenter&#xA;├── right-recharge&#xA;├── snowflake&#xA;├── task-center&#xA;├── third-consume-order&#xA;└── timer&#xA;&#xA;26 directories, 7 files&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;h3 id=&#34;droneyaml&#34;&gt;.drone.yaml&lt;/h3&gt;&#xA;&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;kind: pipeline&#xA;type: docker&#xA;name: apis&#xA;&#xA;workspace:&#xA;  base: /app&#xA;  path: ${DRONE_REPO_NAME}&#xA;&#xA;steps:&#xA;  - name: 检查proto文件&#xA;    image: reg.xxxx.com/golang/apis-generate-go:1.0.0&#xA;    pull: if-not-exists&#xA;    volumes:&#xA;      - name: buf-cache&#xA;        path: /app/buf/.cache&#xA;    commands:&#xA;      - buf lint&#xA;&#xA;  - name: 编译proto文件&#xA;    image: reg.xxxx.com/golang/apis-generate-go:1.0.0&#xA;    pull: if-not-exists&#xA;    volumes:&#xA;      - name: buf-cache&#xA;        path: /app/buf/.cache&#xA;    environment:&#xA;      BUF_CACHE_DIR: /app/buf/.cache&#xA;      TARGET_REPO: apis-go&#xA;      TARGET_REPO_ADDR: git@gogs.xxxx.com:fino/apis-go.git&#xA;      SSH_PRIVATE_KEY:&#xA;        from_secret: ssh_private_key&#xA;    commands:&#xA;      - sh ./apis-go.sh&#xA;&#xA;  - name: 生成swagger文件&#xA;    image: reg.xxxx.com/golang/apis-generate-go:1.0.0&#xA;    pull: if-not-exists&#xA;    volumes:&#xA;      - name: buf-cache&#xA;        path: /app/buf/.cache&#xA;    environment:&#xA;      BUF_CACHE_DIR: /app/buf/.cache&#xA;      TARGET_REPO: apis-swagger&#xA;      TARGET_REPO_ADDR: git@gogs.xxxx.com:fino/apis-swagger.git&#xA;      SSH_PRIVATE_KEY:&#xA;        from_secret: ssh_private_key&#xA;    commands:&#xA;      - sh ./apis-swagger.sh&#xA;&#xA;  - name: 通知&#xA;    image: plugins/webhook&#xA;    pull: if-not-exists&#xA;    settings:&#xA;      urls: https://oapi.dingtalk.com/robot/send?access_token=xxxx&#xA;      content_type: application/json&#xA;      template: |&#xA;        {&#xA;            &amp;quot;msgtype&amp;quot;: &amp;quot;text&amp;quot;,&#xA;            &amp;quot;text&amp;quot;: {&#xA;                &amp;quot;content&amp;quot;: &amp;quot;Proto \n &amp;gt; 构建结果: {{ build.status }} \n &amp;gt; 代码分支: {{ build.branch }} \n &amp;gt; 编译详情: {{ build.link }} \n &amp;gt; 提交信息: {{ build.message }} \n &amp;gt; 提交发起: {{ build.author }} &amp;quot;&#xA;            }&#xA;        }&#xA;&#xA;volumes: # 定义流水线挂载目录，用于共享数据&#xA;  - name: buf-cache&#xA;    host:&#xA;      path: /home/docker/drone/buf/.cache # 从宿主机中挂载的目录&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;&lt;code&gt;ssh_private_key&lt;/code&gt; 经过&lt;code&gt;echo &#39;私钥文件&#39; | base64&lt;/code&gt;生成，并配置在 DRONE 的 Secrets 上&#xA;&lt;code&gt;buf-cache&lt;/code&gt; 是 drone 挂载硬盘，设置 buf 缓存，加快构建速度&#xA;&lt;code&gt;reg.xxxx.com/golang/apis-generate-go:1.0.0&lt;/code&gt; 封装的一个包含 buf 命令的镜像&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>关于敏感数据加密的设计</title>
-      <link>/post/2023/08/31/49/</link>
-      <pubDate>Thu, 31 Aug 2023 00:00:00 +0000</pubDate>
-      <guid>/post/2023/08/31/49/</guid>
-      <description>&lt;ol&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;查询用 hash ，使用用加密。&lt;/p&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;cellphone_enc, cellphone_hash, id_enc,id_hash. 如果还要查询归属地的，再加一个 phone_meta 里面只存前 7 位即可&lt;/p&gt;&#xA;&lt;/blockquote&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;加密后如何查询才能击中索引；&lt;/p&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;使用 hash 查询。&#xA;加密字段只允许精准查询，不允许模糊。&#xA;如果一定要模糊，那也是有限制的模糊，提前定好模糊规则，根据模糊规则提前预留相关数据，再进行加密。&lt;/p&gt;&#xA;&lt;/blockquote&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;用户身份如何验证（手机号、身份证）；&lt;/p&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;验证后再加密，或者允许解密。&lt;/p&gt;&#xA;&lt;/blockquote&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;hr&gt;&#xA;&lt;p&gt;所以你需要&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;一个专用于加密解密的服务。&#xA;所有加密解密都访问该服务。&#xA;可访问数据库的人，秘钥管理人，加密服务管理人，这三方不能有任何一方有办法获取到所有要素。&lt;/li&gt;&#xA;&lt;li&gt;调用解密必须有日志。&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;p&gt;注意：&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;不同业务场景对脱敏的要求是不一样的。我们公司的要求是，任何人任何时候都不能看到明文，明文只出现在内存中。&#xA;有时候，脱敏并不是要求看不到明文，而是要求 不要让人在看到 1 条明文时，再看到与之相关的其他明文，进而推测出业务信息，例如同时看到姓名与手机号。当然，这与你们公司的具体场景有关。&lt;/li&gt;&#xA;&lt;li&gt;解密后，明文在内存中，如果被 log ，一直面临风险，所以需要对日志进行审核。&lt;/li&gt;&#xA;&lt;li&gt;现在有些数据库或者数据库中间件支持字段脱敏。你可以参考他们的方案。&lt;/li&gt;&#xA;&lt;/ol&gt;</description>
-    </item>
-    <item>
-      <title>SQL提交规范</title>
-      <link>/post/2022/02/18/27/</link>
-      <pubDate>Fri, 18 Feb 2022 00:00:00 +0000</pubDate>
-      <guid>/post/2022/02/18/27/</guid>
-      <description>&lt;h4 id=&#34;规范&#34;&gt;规范&lt;/h4&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;插入数据不可重复，使用 &lt;code&gt;REPLACE INTO&lt;/code&gt; 替代 &lt;code&gt;INSERT INTO&lt;/code&gt;&#xA;&lt;pre&gt;&lt;code class=&#34;language-sql&#34;&gt;REPLACE INTO tableName(columnName, ...) VALUES(...)&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;添加表时，使用 &lt;code&gt;IF NOT EXISTS&lt;/code&gt;&#xA;&lt;pre&gt;&lt;code class=&#34;language-sql&#34;&gt;CREATE TABLE IF NOT EXISTS XXX&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;删除表时，可以使用 &lt;code&gt;IF EXISTS&lt;/code&gt;&#xA;&lt;pre&gt;&lt;code class=&#34;language-sql&#34;&gt;DROP TABLE IF EXISTS XXX&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;管理字段和索引时，使用存储过程&#xA;&lt;pre&gt;&lt;code class=&#34;language-sql&#34;&gt;CALL AddColumnIfNotExists (&#39;ztc_room&#39;, &#39;introduction&#39;, &#39;VARCHAR(1000) NOT NULL DEFAULT \&#39;\&#39; COMMENT \&#39;房源介绍\&#39;&#39;);&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;h4 id=&#34;常用存储过程&#34;&gt;常用存储过程&lt;/h4&gt;&#xA;&lt;table&gt;&#xA;  &lt;thead&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;th&gt;过程名&lt;/th&gt;&#xA;          &lt;th&gt;含义&lt;/th&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/thead&gt;&#xA;  &lt;tbody&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;AddColumnIfNotExists&lt;/td&gt;&#xA;          &lt;td&gt;添加字段（表名，字段名，字段描述）&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;UpdateColumnIfExists&lt;/td&gt;&#xA;          &lt;td&gt;更新字段（表名，字段名，字段描述）&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;DropColumnIfExists&lt;/td&gt;&#xA;          &lt;td&gt;删除字段（表名，字段名）&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;CreateIndexIfNotExists&lt;/td&gt;&#xA;          &lt;td&gt;添加普通索引（表名，字段名）&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;CreateUniqueIndexIfNotExists&lt;/td&gt;&#xA;          &lt;td&gt;添加唯一索引（表名，字段名）&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;CreateIndexIfNotExistsWithColumns&lt;/td&gt;&#xA;          &lt;td&gt;添加组合普通索引（表名，索引名，字段名）&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;CreateUniqueIndexIfNotExistsWithColumns&lt;/td&gt;&#xA;          &lt;td&gt;添加组合唯一索引（表名，索引名，字段名）&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;DropIndexIfExists&lt;/td&gt;&#xA;          &lt;td&gt;删除索引（表名，索引名）&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/tbody&gt;&#xA;&lt;/table&gt;&#xA;&lt;pre&gt;&lt;code&gt;DELIMITER  $$&#xA;# AddColumnIfNotExists 添加字段&#xA;DROP&#xA;    PROCEDURE IF EXISTS AddColumnIfNotExists$$&#xA;CREATE PROCEDURE `AddColumnIfNotExists`(&#xA;    IN tableName varchar(100), IN columnName varchar(100),&#xA;    IN dbType varchar(100))&#xA;BEGIN&#xA;    DECLARE _tableCount INT;&#xA;    DECLARE _columnCount INT;&#xA;&#xA;    SET&#xA;        _tableCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM INFORMATION_SCHEMA.TABLES&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName);&#xA;&#xA;    SET&#xA;        _columnCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM INFORMATION_SCHEMA.COLUMNS&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName&#xA;            AND COLUMN_NAME = columnName);&#xA;    IF _tableCount = 1&#xA;        AND _columnCount = 0&#xA;    THEN&#xA;        SET&#xA;            @_sqlText = CONCAT(&#39; ALTER TABLE `&#39;,&#xA;                            tableName, &#39;` ADD COLUMN `&#39;,&#xA;                            columnName, &#39;` &#39;,&#xA;                            dbType);&#xA;        PREPARE stmt1&#xA;            FROM&#xA;            @_sqlText;&#xA;        EXECUTE stmt1;&#xA;        DEALLOCATE PREPARE stmt1;&#xA;    END IF;&#xA;END$$&#xA;&#xA;# UpdateColumnIfExists 更新字段&#xA;DROP&#xA;    PROCEDURE IF EXISTS UpdateColumnIfExists$$&#xA;CREATE PROCEDURE `UpdateColumnIfExists`(&#xA;    IN tableName varchar(100), IN columnName varchar(100),&#xA;    IN dbType varchar(100))&#xA;BEGIN&#xA;    DECLARE _columnCount INT;&#xA;&#xA;    SET&#xA;        _columnCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM INFORMATION_SCHEMA.COLUMNS&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName&#xA;            AND COLUMN_NAME = columnName);&#xA;    IF&#xA;        _columnCount = 1 THEN&#xA;        SET&#xA;            @_sqlText = CONCAT(&#39; ALTER TABLE `&#39;,&#xA;                            tableName, &#39;` MODIFY COLUMN `&#39;,&#xA;                            columnName, &#39;` &#39;,&#xA;                            dbType&#xA;                );&#xA;        PREPARE stmt1&#xA;            FROM&#xA;            @_sqlText;&#xA;        EXECUTE stmt1; DEALLOCATE PREPARE stmt1;&#xA;    END IF;&#xA;END$$&#xA;&#xA;# DropColumnIfExists 删除字段&#xA;DROP&#xA;    PROCEDURE IF EXISTS DropColumnIfExists$$&#xA;CREATE PROCEDURE `DropColumnIfExists`(&#xA;    IN tableName varchar(100), IN columnName varchar(100))&#xA;BEGIN&#xA;    DECLARE _columnCount INT;&#xA;&#xA;    SET&#xA;        _columnCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM INFORMATION_SCHEMA.COLUMNS&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName&#xA;            AND COLUMN_NAME = columnName);&#xA;    IF _columnCount = 1&#xA;    THEN&#xA;        SET&#xA;            @_sqlText = CONCAT(&#39; ALTER TABLE &#39;,&#xA;                            tableName, &#39; DROP COLUMN &#39;,&#xA;                            columnName, &#39; ;&#39;&#xA;                );&#xA;        PREPARE stmt1&#xA;            FROM&#xA;            @_sqlText;&#xA;        EXECUTE stmt1;&#xA;        DEALLOCATE PREPARE stmt1;&#xA;    END IF;&#xA;END$$&#xA;&#xA;# CreateIndexIfNotExists 添加普通索引&#xA;DROP&#xA;    PROCEDURE IF EXISTS CreateIndexIfNotExists$$&#xA;CREATE PROCEDURE `CreateIndexIfNotExists`(&#xA;    IN tableName varchar(100), IN columnName varchar(100))&#xA;BEGIN&#xA;    DECLARE _tableCount INT;&#xA;    DECLARE _indexCount INT;&#xA;&#xA;    SET&#xA;        _tableCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM INFORMATION_SCHEMA.TABLES&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName);&#xA;&#xA;    SET&#xA;        _indexCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM information_schema.statistics&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName&#xA;            AND INDEX_NAME = CONCAT(&#39;IX_&#39;,&#xA;                                    columnName)&#xA;        );&#xA;    IF _tableCount = 1&#xA;        AND _indexCount = 0&#xA;    THEN&#xA;        SET&#xA;            @_sqlText = CONCAT(&#39; CREATE INDEX `IX_&#39;,&#xA;                            columnName, &#39;` ON `&#39;,&#xA;                            tableName, &#39;`(`&#39;,&#xA;                            columnName, &#39;` ASC);&#39;&#xA;                );&#xA;        PREPARE stmt1&#xA;            FROM&#xA;            @_sqlText;&#xA;        EXECUTE stmt1; DEALLOCATE PREPARE stmt1;&#xA;    END IF;&#xA;END$$&#xA;&#xA;# CreateUniqueIndexIfNotExists 添加唯一索引&#xA;DROP&#xA;    PROCEDURE IF EXISTS CreateUniqueIndexIfNotExists$$&#xA;CREATE PROCEDURE `CreateUniqueIndexIfNotExists`(&#xA;    IN tableName varchar(100), IN columnName varchar(100))&#xA;BEGIN&#xA;    DECLARE _tableCount INT;&#xA;    DECLARE _indexCount INT;&#xA;&#xA;    SET&#xA;        _tableCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM INFORMATION_SCHEMA.TABLES&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName);&#xA;&#xA;    SET&#xA;        _indexCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM information_schema.statistics&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName&#xA;            AND INDEX_NAME = CONCAT(&#39;IX_&#39;,&#xA;                                    columnName)&#xA;        );&#xA;    IF _tableCount = 1&#xA;        AND _indexCount = 0&#xA;    THEN&#xA;        SET&#xA;            @_sqlText = CONCAT(&#39; CREATE UNIQUE INDEX `IX_&#39;,&#xA;                            columnName, &#39;` ON `&#39;,&#xA;                            tableName, &#39;`(`&#39;,&#xA;                            columnName, &#39;` ASC);&#39;&#xA;                );&#xA;        PREPARE stmt1&#xA;            FROM&#xA;            @_sqlText;&#xA;        EXECUTE stmt1; DEALLOCATE PREPARE stmt1;&#xA;    END IF;&#xA;END$$&#xA;&#xA;# CreateIndexIfNotExistsWithColumns 添加组合普通索引&#xA;DROP&#xA;    PROCEDURE IF EXISTS CreateIndexIfNotExistsWithColumns$$&#xA;CREATE PROCEDURE `CreateIndexIfNotExistsWithColumns`(&#xA;    IN tableName varchar(200), IN indexName VARCHAR(200),&#xA;    IN columnName VARCHAR(200))&#xA;BEGIN&#xA;    DECLARE _tableCount INT;&#xA;    DECLARE _indexCount INT;&#xA;&#xA;    SET&#xA;        _tableCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM INFORMATION_SCHEMA.TABLES&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName);&#xA;&#xA;    SET&#xA;        _indexCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM information_schema.statistics&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName&#xA;            AND INDEX_NAME = CONCAT(&#39;IX_&#39;,&#xA;                                    indexName)&#xA;        );&#xA;    IF _tableCount = 1&#xA;        AND _indexCount = 0&#xA;    THEN&#xA;        SET&#xA;            @_sqlText = CONCAT(&#39; CREATE INDEX `IX_&#39;,&#xA;                            indexName, &#39;` ON `&#39;,&#xA;                            tableName, &#39;`(&#39;,&#xA;                            columnName, &#39;);&#xA;&#39;);&#xA;        PREPARE stmt1&#xA;            FROM&#xA;            @_sqlText;&#xA;        EXECUTE stmt1;&#xA;        DEALLOCATE PREPARE stmt1;&#xA;    END IF;&#xA;END$$&#xA;&#xA;# CreateUniqueIndexIfNotExistsWithColumns 添加组合唯一索引&#xA;DROP&#xA;    PROCEDURE IF EXISTS CreateUniqueIndexIfNotExistsWithColumns$$&#xA;CREATE PROCEDURE `CreateUniqueIndexIfNotExistsWithColumns`(&#xA;    IN tableName VARCHAR(200), IN indexName VARCHAR(200),&#xA;    IN columnName VARCHAR(200))&#xA;BEGIN&#xA;    DECLARE _tableCount INT;&#xA;    DECLARE _indexCount INT;&#xA;&#xA;    SET&#xA;        _tableCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM INFORMATION_SCHEMA.TABLES&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName);&#xA;&#xA;    SET&#xA;        _indexCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM information_schema.statistics&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName&#xA;            AND INDEX_NAME = CONCAT(&#39;IX_&#39;,&#xA;                                    indexName)&#xA;        );&#xA;    IF _tableCount = 1&#xA;        AND _indexCount = 0&#xA;    THEN&#xA;        SET&#xA;            @_sqlText = CONCAT(&#39; CREATE UNIQUE INDEX `IX_&#39;,&#xA;                            indexName, &#39;` ON `&#39;,&#xA;                            tableName, &#39;`(&#39;,&#xA;                            columnName, &#39;);&#xA;&#39;);&#xA;        PREPARE stmt1&#xA;            FROM&#xA;            @_sqlText;&#xA;        EXECUTE stmt1;&#xA;        DEALLOCATE PREPARE stmt1;&#xA;    END IF;&#xA;END$$&#xA;&#xA;# DropIndexIfExists 删除索引&#xA;DROP&#xA;    PROCEDURE IF EXISTS DropIndexIfExists$$&#xA;CREATE PROCEDURE `DropIndexIfExists`(&#xA;    IN tableName varchar(100), IN indexName varchar(100))&#xA;BEGIN&#xA;    DECLARE _indexCount INT;&#xA;&#xA;    SET&#xA;        _indexCount = (&#xA;            SELECT COUNT(1)&#xA;            FROM information_schema.statistics&#xA;            WHERE TABLE_SCHEMA = (&#xA;                SELECT SCHEMA(&#xA;                        )&#xA;            )&#xA;            AND TABLE_NAME = tableName&#xA;            AND INDEX_NAME = CONCAT(&#39;IX_&#39;,&#xA;                                    indexName)&#xA;        );&#xA;    IF _indexCount &amp;gt; 0&#xA;    THEN&#xA;        SET&#xA;            @_sqlText = CONCAT(&#39; DROP INDEX `IX_&#39;,&#xA;                            indexName, &#39;` ON `&#39;,&#xA;                            tableName, &#39;`; &#39;&#xA;                );&#xA;        PREPARE stmt1&#xA;            FROM&#xA;            @_sqlText;&#xA;        EXECUTE stmt1; DEALLOCATE PREPARE stmt1;&#xA;    END IF;&#xA;END$$&#xA;&#xA;DELIMITER ;&#xA;&lt;/code&gt;&lt;/pre&gt;</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>方案设计 on 星河</title><link>/categories/%E6%96%B9%E6%A1%88%E8%AE%BE%E8%AE%A1/</link><description>Recent content in 方案设计 on 星河</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Sat, 25 May 2024 00:00:00 +0000</lastBuildDate><atom:link href="/categories/%E6%96%B9%E6%A1%88%E8%AE%BE%E8%AE%A1/index.xml" rel="self" type="application/rss+xml"/><item><title>统一管理 Protocol Buffer，API 大仓设计与实现</title><link>/post/2024/05/25/59/</link><pubDate>Sat, 25 May 2024 00:00:00 +0000</pubDate><guid>/post/2024/05/25/59/</guid><description>&lt;h2 id="背景">背景&lt;/h2>
+&lt;p>目前公司采用 protocol buffer 作为 IDL，虽然可以根据 API 定义，轻松生成客户端和服务端的代码。但是对于跨项目的接口，会增加项目之间的耦合性。例如 A 服务对外提供了一个接口，B 服务去调用。那么就需要根据 A 服务的 proto 文件，生成客户端代码，并拷贝给 B。如果联调期间，A 服务改动了该接口，还需重复前面的步骤，非常繁琐&lt;/p>
+&lt;h2 id="方案">方案&lt;/h2>
+&lt;p>常见的几种解决方案，煎鱼大佬已经描述得很详细了（&lt;a href="https://mp.weixin.qq.com/s/cBXZjg_R8MLFDJyFtpjVVQ">真是头疼，Proto 代码到底放哪里？&lt;/a>）&lt;/p>
+&lt;ul>
+&lt;li>方案一：api 大仓 + git submodule（b 站）&lt;/li>
+&lt;li>方案二：api 大仓 + git submodule + 每个项目生成代码专有仓库&lt;/li>
+&lt;li>方案三：每个项目都有一个 api 仓库，包含生成的代码&lt;/li>
+&lt;li>方案四：api 大仓 + api 生成代码的集中仓库&lt;/li>
+&lt;/ul>
+&lt;p>具体方案的优缺点 yuyy 博主已经写清楚了。
+权衡了下，和博主一样选择方案四。&lt;/p>
+&lt;h2 id="具体实现">具体实现&lt;/h2>
+&lt;p>&lt;a href="https://imgse.com/i/pklP974">&lt;img src="https://s21.ax1x.com/2024/05/25/pklP974.png" alt="pklP974.png">&lt;/a>&lt;/p>
+&lt;h3 id="drone-文件">DRONE 文件&lt;/h3>
+&lt;pre>&lt;code class="language-shell">$ tree -L 1
+.
+├── Dockerfile
+├── Makefile
+├── README.md
+├── apis-go.gen.yml
+├── apis-go.sh
+├── apis-swagger.gen.yml
+├── apis-swagger.sh
+├── auth-center
+├── budget-center
+├── common
+├── consume-order
+├── consume-quota-center
+├── consume-rule-to-third
+├── datacenter
+├── fino-multi-env-center
+├── finobase
+├── finoconsume
+├── invoice
+├── mng-center
+├── mq-center
+├── notify-center
+├── org-arch-center
+├── org-asset-center
+├── org-order-center
+├── org-recharge-center
+├── org-settle-center
+├── pubsvc
+├── pushcenter
+├── right-recharge
+├── snowflake
+├── task-center
+├── third-consume-order
+└── timer
+
+26 directories, 7 files
+&lt;/code>&lt;/pre>
+&lt;h3 id="droneyaml">.drone.yaml&lt;/h3>
+&lt;pre>&lt;code class="language-yaml">kind: pipeline
+type: docker
+name: apis
+
+workspace:
+ base: /app
+ path: ${DRONE_REPO_NAME}
+
+steps:
+ - name: 检查proto文件
+ image: reg.xxxx.com/golang/apis-generate-go:1.0.0
+ pull: if-not-exists
+ volumes:
+ - name: buf-cache
+ path: /app/buf/.cache
+ commands:
+ - buf lint
+
+ - name: 编译proto文件
+ image: reg.xxxx.com/golang/apis-generate-go:1.0.0
+ pull: if-not-exists
+ volumes:
+ - name: buf-cache
+ path: /app/buf/.cache
+ environment:
+ BUF_CACHE_DIR: /app/buf/.cache
+ TARGET_REPO: apis-go
+ TARGET_REPO_ADDR: git@gogs.xxxx.com:fino/apis-go.git
+ SSH_PRIVATE_KEY:
+ from_secret: ssh_private_key
+ commands:
+ - sh ./apis-go.sh
+
+ - name: 生成swagger文件
+ image: reg.xxxx.com/golang/apis-generate-go:1.0.0
+ pull: if-not-exists
+ volumes:
+ - name: buf-cache
+ path: /app/buf/.cache
+ environment:
+ BUF_CACHE_DIR: /app/buf/.cache
+ TARGET_REPO: apis-swagger
+ TARGET_REPO_ADDR: git@gogs.xxxx.com:fino/apis-swagger.git
+ SSH_PRIVATE_KEY:
+ from_secret: ssh_private_key
+ commands:
+ - sh ./apis-swagger.sh
+
+ - name: 通知
+ image: plugins/webhook
+ pull: if-not-exists
+ settings:
+ urls: https://oapi.dingtalk.com/robot/send?access_token=xxxx
+ content_type: application/json
+ template: |
+ {
+ &amp;quot;msgtype&amp;quot;: &amp;quot;text&amp;quot;,
+ &amp;quot;text&amp;quot;: {
+ &amp;quot;content&amp;quot;: &amp;quot;Proto \n &amp;gt; 构建结果: {{ build.status }} \n &amp;gt; 代码分支: {{ build.branch }} \n &amp;gt; 编译详情: {{ build.link }} \n &amp;gt; 提交信息: {{ build.message }} \n &amp;gt; 提交发起: {{ build.author }} &amp;quot;
+ }
+ }
+
+volumes: # 定义流水线挂载目录，用于共享数据
+ - name: buf-cache
+ host:
+ path: /home/docker/drone/buf/.cache # 从宿主机中挂载的目录
+&lt;/code>&lt;/pre>
+&lt;p>&lt;code>ssh_private_key&lt;/code> 经过&lt;code>echo '私钥文件' | base64&lt;/code>生成，并配置在 DRONE 的 Secrets 上
+&lt;code>buf-cache&lt;/code> 是 drone 挂载硬盘，设置 buf 缓存，加快构建速度
+&lt;code>reg.xxxx.com/golang/apis-generate-go:1.0.0&lt;/code> 封装的一个包含 buf 命令的镜像&lt;/p></description></item><item><title>关于敏感数据加密的设计</title><link>/post/2023/08/31/49/</link><pubDate>Thu, 31 Aug 2023 00:00:00 +0000</pubDate><guid>/post/2023/08/31/49/</guid><description>&lt;ol>
+&lt;li>
+&lt;p>查询用 hash ，使用用加密。&lt;/p>
+&lt;blockquote>
+&lt;p>cellphone_enc, cellphone_hash, id_enc,id_hash. 如果还要查询归属地的，再加一个 phone_meta 里面只存前 7 位即可&lt;/p>
+&lt;/blockquote>
+&lt;/li>
+&lt;li>
+&lt;p>加密后如何查询才能击中索引；&lt;/p>
+&lt;blockquote>
+&lt;p>使用 hash 查询。
+加密字段只允许精准查询，不允许模糊。
+如果一定要模糊，那也是有限制的模糊，提前定好模糊规则，根据模糊规则提前预留相关数据，再进行加密。&lt;/p>
+&lt;/blockquote>
+&lt;/li>
+&lt;li>
+&lt;p>用户身份如何验证（手机号、身份证）；&lt;/p>
+&lt;blockquote>
+&lt;p>验证后再加密，或者允许解密。&lt;/p>
+&lt;/blockquote>
+&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;p>所以你需要&lt;/p>
+&lt;ol>
+&lt;li>一个专用于加密解密的服务。
+所有加密解密都访问该服务。
+可访问数据库的人，秘钥管理人，加密服务管理人，这三方不能有任何一方有办法获取到所有要素。&lt;/li>
+&lt;li>调用解密必须有日志。&lt;/li>
+&lt;/ol>
+&lt;p>注意：&lt;/p>
+&lt;ol>
+&lt;li>不同业务场景对脱敏的要求是不一样的。我们公司的要求是，任何人任何时候都不能看到明文，明文只出现在内存中。
+有时候，脱敏并不是要求看不到明文，而是要求 不要让人在看到 1 条明文时，再看到与之相关的其他明文，进而推测出业务信息，例如同时看到姓名与手机号。当然，这与你们公司的具体场景有关。&lt;/li>
+&lt;li>解密后，明文在内存中，如果被 log ，一直面临风险，所以需要对日志进行审核。&lt;/li>
+&lt;li>现在有些数据库或者数据库中间件支持字段脱敏。你可以参考他们的方案。&lt;/li>
+&lt;/ol></description></item><item><title>SQL提交规范</title><link>/post/2022/02/18/27/</link><pubDate>Fri, 18 Feb 2022 00:00:00 +0000</pubDate><guid>/post/2022/02/18/27/</guid><description>&lt;h4 id="规范">规范&lt;/h4>
+&lt;ol>
+&lt;li>插入数据不可重复，使用 &lt;code>REPLACE INTO&lt;/code> 替代 &lt;code>INSERT INTO&lt;/code>
+&lt;pre>&lt;code class="language-sql">REPLACE INTO tableName(columnName, ...) VALUES(...)
+&lt;/code>&lt;/pre>
+&lt;/li>
+&lt;li>添加表时，使用 &lt;code>IF NOT EXISTS&lt;/code>
+&lt;pre>&lt;code class="language-sql">CREATE TABLE IF NOT EXISTS XXX
+&lt;/code>&lt;/pre>
+&lt;/li>
+&lt;li>删除表时，可以使用 &lt;code>IF EXISTS&lt;/code>
+&lt;pre>&lt;code class="language-sql">DROP TABLE IF EXISTS XXX
+&lt;/code>&lt;/pre>
+&lt;/li>
+&lt;li>管理字段和索引时，使用存储过程
+&lt;pre>&lt;code class="language-sql">CALL AddColumnIfNotExists ('ztc_room', 'introduction', 'VARCHAR(1000) NOT NULL DEFAULT \'\' COMMENT \'房源介绍\'');
+&lt;/code>&lt;/pre>
+&lt;/li>
+&lt;/ol>
+&lt;h4 id="常用存储过程">常用存储过程&lt;/h4>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>过程名&lt;/th>
+ &lt;th>含义&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>AddColumnIfNotExists&lt;/td>
+ &lt;td>添加字段（表名，字段名，字段描述）&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>UpdateColumnIfExists&lt;/td>
+ &lt;td>更新字段（表名，字段名，字段描述）&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>DropColumnIfExists&lt;/td>
+ &lt;td>删除字段（表名，字段名）&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>CreateIndexIfNotExists&lt;/td>
+ &lt;td>添加普通索引（表名，字段名）&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>CreateUniqueIndexIfNotExists&lt;/td>
+ &lt;td>添加唯一索引（表名，字段名）&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>CreateIndexIfNotExistsWithColumns&lt;/td>
+ &lt;td>添加组合普通索引（表名，索引名，字段名）&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>CreateUniqueIndexIfNotExistsWithColumns&lt;/td>
+ &lt;td>添加组合唯一索引（表名，索引名，字段名）&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>DropIndexIfExists&lt;/td>
+ &lt;td>删除索引（表名，索引名）&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;pre>&lt;code>DELIMITER $$
+# AddColumnIfNotExists 添加字段
+DROP
+ PROCEDURE IF EXISTS AddColumnIfNotExists$$
+CREATE PROCEDURE `AddColumnIfNotExists`(
+ IN tableName varchar(100), IN columnName varchar(100),
+ IN dbType varchar(100))
+BEGIN
+ DECLARE _tableCount INT;
+ DECLARE _columnCount INT;
+
+ SET
+ _tableCount = (
+ SELECT COUNT(1)
+ FROM INFORMATION_SCHEMA.TABLES
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName);
+
+ SET
+ _columnCount = (
+ SELECT COUNT(1)
+ FROM INFORMATION_SCHEMA.COLUMNS
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName
+ AND COLUMN_NAME = columnName);
+ IF _tableCount = 1
+ AND _columnCount = 0
+ THEN
+ SET
+ @_sqlText = CONCAT(' ALTER TABLE `',
+ tableName, '` ADD COLUMN `',
+ columnName, '` ',
+ dbType);
+ PREPARE stmt1
+ FROM
+ @_sqlText;
+ EXECUTE stmt1;
+ DEALLOCATE PREPARE stmt1;
+ END IF;
+END$$
+
+# UpdateColumnIfExists 更新字段
+DROP
+ PROCEDURE IF EXISTS UpdateColumnIfExists$$
+CREATE PROCEDURE `UpdateColumnIfExists`(
+ IN tableName varchar(100), IN columnName varchar(100),
+ IN dbType varchar(100))
+BEGIN
+ DECLARE _columnCount INT;
+
+ SET
+ _columnCount = (
+ SELECT COUNT(1)
+ FROM INFORMATION_SCHEMA.COLUMNS
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName
+ AND COLUMN_NAME = columnName);
+ IF
+ _columnCount = 1 THEN
+ SET
+ @_sqlText = CONCAT(' ALTER TABLE `',
+ tableName, '` MODIFY COLUMN `',
+ columnName, '` ',
+ dbType
+ );
+ PREPARE stmt1
+ FROM
+ @_sqlText;
+ EXECUTE stmt1; DEALLOCATE PREPARE stmt1;
+ END IF;
+END$$
+
+# DropColumnIfExists 删除字段
+DROP
+ PROCEDURE IF EXISTS DropColumnIfExists$$
+CREATE PROCEDURE `DropColumnIfExists`(
+ IN tableName varchar(100), IN columnName varchar(100))
+BEGIN
+ DECLARE _columnCount INT;
+
+ SET
+ _columnCount = (
+ SELECT COUNT(1)
+ FROM INFORMATION_SCHEMA.COLUMNS
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName
+ AND COLUMN_NAME = columnName);
+ IF _columnCount = 1
+ THEN
+ SET
+ @_sqlText = CONCAT(' ALTER TABLE ',
+ tableName, ' DROP COLUMN ',
+ columnName, ' ;'
+ );
+ PREPARE stmt1
+ FROM
+ @_sqlText;
+ EXECUTE stmt1;
+ DEALLOCATE PREPARE stmt1;
+ END IF;
+END$$
+
+# CreateIndexIfNotExists 添加普通索引
+DROP
+ PROCEDURE IF EXISTS CreateIndexIfNotExists$$
+CREATE PROCEDURE `CreateIndexIfNotExists`(
+ IN tableName varchar(100), IN columnName varchar(100))
+BEGIN
+ DECLARE _tableCount INT;
+ DECLARE _indexCount INT;
+
+ SET
+ _tableCount = (
+ SELECT COUNT(1)
+ FROM INFORMATION_SCHEMA.TABLES
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName);
+
+ SET
+ _indexCount = (
+ SELECT COUNT(1)
+ FROM information_schema.statistics
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName
+ AND INDEX_NAME = CONCAT('IX_',
+ columnName)
+ );
+ IF _tableCount = 1
+ AND _indexCount = 0
+ THEN
+ SET
+ @_sqlText = CONCAT(' CREATE INDEX `IX_',
+ columnName, '` ON `',
+ tableName, '`(`',
+ columnName, '` ASC);'
+ );
+ PREPARE stmt1
+ FROM
+ @_sqlText;
+ EXECUTE stmt1; DEALLOCATE PREPARE stmt1;
+ END IF;
+END$$
+
+# CreateUniqueIndexIfNotExists 添加唯一索引
+DROP
+ PROCEDURE IF EXISTS CreateUniqueIndexIfNotExists$$
+CREATE PROCEDURE `CreateUniqueIndexIfNotExists`(
+ IN tableName varchar(100), IN columnName varchar(100))
+BEGIN
+ DECLARE _tableCount INT;
+ DECLARE _indexCount INT;
+
+ SET
+ _tableCount = (
+ SELECT COUNT(1)
+ FROM INFORMATION_SCHEMA.TABLES
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName);
+
+ SET
+ _indexCount = (
+ SELECT COUNT(1)
+ FROM information_schema.statistics
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName
+ AND INDEX_NAME = CONCAT('IX_',
+ columnName)
+ );
+ IF _tableCount = 1
+ AND _indexCount = 0
+ THEN
+ SET
+ @_sqlText = CONCAT(' CREATE UNIQUE INDEX `IX_',
+ columnName, '` ON `',
+ tableName, '`(`',
+ columnName, '` ASC);'
+ );
+ PREPARE stmt1
+ FROM
+ @_sqlText;
+ EXECUTE stmt1; DEALLOCATE PREPARE stmt1;
+ END IF;
+END$$
+
+# CreateIndexIfNotExistsWithColumns 添加组合普通索引
+DROP
+ PROCEDURE IF EXISTS CreateIndexIfNotExistsWithColumns$$
+CREATE PROCEDURE `CreateIndexIfNotExistsWithColumns`(
+ IN tableName varchar(200), IN indexName VARCHAR(200),
+ IN columnName VARCHAR(200))
+BEGIN
+ DECLARE _tableCount INT;
+ DECLARE _indexCount INT;
+
+ SET
+ _tableCount = (
+ SELECT COUNT(1)
+ FROM INFORMATION_SCHEMA.TABLES
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName);
+
+ SET
+ _indexCount = (
+ SELECT COUNT(1)
+ FROM information_schema.statistics
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName
+ AND INDEX_NAME = CONCAT('IX_',
+ indexName)
+ );
+ IF _tableCount = 1
+ AND _indexCount = 0
+ THEN
+ SET
+ @_sqlText = CONCAT(' CREATE INDEX `IX_',
+ indexName, '` ON `',
+ tableName, '`(',
+ columnName, ');
+');
+ PREPARE stmt1
+ FROM
+ @_sqlText;
+ EXECUTE stmt1;
+ DEALLOCATE PREPARE stmt1;
+ END IF;
+END$$
+
+# CreateUniqueIndexIfNotExistsWithColumns 添加组合唯一索引
+DROP
+ PROCEDURE IF EXISTS CreateUniqueIndexIfNotExistsWithColumns$$
+CREATE PROCEDURE `CreateUniqueIndexIfNotExistsWithColumns`(
+ IN tableName VARCHAR(200), IN indexName VARCHAR(200),
+ IN columnName VARCHAR(200))
+BEGIN
+ DECLARE _tableCount INT;
+ DECLARE _indexCount INT;
+
+ SET
+ _tableCount = (
+ SELECT COUNT(1)
+ FROM INFORMATION_SCHEMA.TABLES
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName);
+
+ SET
+ _indexCount = (
+ SELECT COUNT(1)
+ FROM information_schema.statistics
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName
+ AND INDEX_NAME = CONCAT('IX_',
+ indexName)
+ );
+ IF _tableCount = 1
+ AND _indexCount = 0
+ THEN
+ SET
+ @_sqlText = CONCAT(' CREATE UNIQUE INDEX `IX_',
+ indexName, '` ON `',
+ tableName, '`(',
+ columnName, ');
+');
+ PREPARE stmt1
+ FROM
+ @_sqlText;
+ EXECUTE stmt1;
+ DEALLOCATE PREPARE stmt1;
+ END IF;
+END$$
+
+# DropIndexIfExists 删除索引
+DROP
+ PROCEDURE IF EXISTS DropIndexIfExists$$
+CREATE PROCEDURE `DropIndexIfExists`(
+ IN tableName varchar(100), IN indexName varchar(100))
+BEGIN
+ DECLARE _indexCount INT;
+
+ SET
+ _indexCount = (
+ SELECT COUNT(1)
+ FROM information_schema.statistics
+ WHERE TABLE_SCHEMA = (
+ SELECT SCHEMA(
+ )
+ )
+ AND TABLE_NAME = tableName
+ AND INDEX_NAME = CONCAT('IX_',
+ indexName)
+ );
+ IF _indexCount &amp;gt; 0
+ THEN
+ SET
+ @_sqlText = CONCAT(' DROP INDEX `IX_',
+ indexName, '` ON `',
+ tableName, '`; '
+ );
+ PREPARE stmt1
+ FROM
+ @_sqlText;
+ EXECUTE stmt1; DEALLOCATE PREPARE stmt1;
+ END IF;
+END$$
+
+DELIMITER ;
+&lt;/code>&lt;/pre></description></item></channel></rss>

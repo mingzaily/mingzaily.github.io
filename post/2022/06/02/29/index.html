@@ -1,112 +1,12 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-    <title>Golang 协程更好的进行错误处理 - 星河</title>
-    <meta property="og:title" content="Golang 协程更好的进行错误处理 - 星河">
-    
-    <meta name="twitter:card" content="summary">
-
-    
-    
-      
-    
-
-    
-      
-      <meta property="description" content="Go 的经典哲学：不要通过共享内存来通信，而是通过通信来实现内存共享
-func main() { cherrors := make(chan error) wgDone := make(chan bool) var wg sync.WaitGroup wg.Add(2) go func() { //... 业务逻辑 wg.Done() }() go func() { //... 业务逻辑 err &amp;hellip;">
-      <meta property="og:description" content="Go 的经典哲学：不要通过共享内存来通信，而是通过通信来实现内存共享
-func main() { cherrors := make(chan error) wgDone := make(chan bool) var wg sync.WaitGroup wg.Add(2) go func() { //... 业务逻辑 wg.Done() }() go func() { //... 业务逻辑 err &amp;hellip;">
-      
-    
-
-    
-    
-    
-
-    
-
-    
-    
-
-
-<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css">
-
-
-
-    <link rel="stylesheet" href="/css/style.css" />
-    <link rel="stylesheet" href="/css/fonts.css" />
-    <link rel="stylesheet" href="/css/diary.css" />
-    
-  </head>
-  <body class="post">
-    <header class="masthead">
-      <h1><a href="/">星河</a></h1>
-
-<p class="tagline">醉后不知天在水，满船清梦压星河</p>
-
-      <nav class="menu">
-  <input id="menu-check" type="checkbox" hidden/>
-  <label id="menu-label" for="menu-check" class="unselectable" hidden>
-    <span class="icon close-icon">✕</span>
-    <span class="icon open-icon">☰</span>
-    <span class="text">Menu</span>
-  </label>
-  <ul>
-  
-  
-  <li><a href="/">首页</a></li>
-  
-  <li><a href="/shuoshuo">说说</a></li>
-  
-  <li><a href="/categories/">分类</a></li>
-  
-  <li><a href="/tags/">标签</a></li>
-  
-  <li><a href="/about/">关于</a></li>
-  
-  
-  </ul>
-</nav>
-
-    </header>
-
-    <article class="main">
-      <header class="title">
-      
-<h1>Golang 协程更好的进行错误处理</h1>
-
-
-
-<h3>
-
-mingzaily
-
-
-
-
-
-
- / 
-2022-06-02
-</h3>
-
-<hr>
-
-
-      </header>
-
-
-
-
-
-<h2 id="利用-channel-来传输多个-goroutine-中的-errors">利用 <code>channel</code> 来传输多个 goroutine 中的 errors</h2>
-<p>Go 的经典哲学：不要通过共享内存来通信，而是通过通信来实现内存共享</p>
-<pre><code class="language-golang">func main() {
+<!doctype html><html lang=zh-CN><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Golang 协程更好的进行错误处理 - 星河</title>
+<meta property="og:title" content="Golang 协程更好的进行错误处理 - 星河"><meta name=twitter:card content="summary"><meta property="description" content="Go 的经典哲学：不要通过共享内存来通信，而是通过通信来实现内存共享
+func main() { cherrors := make(chan error) wgDone := make(chan bool) var wg sync.WaitGroup wg.Add(2) go func() { //... 业务逻辑 wg.Done() }() go func() { //... 业务逻辑 err &amp;hellip;"><meta property="og:description" content="Go 的经典哲学：不要通过共享内存来通信，而是通过通信来实现内存共享
+func main() { cherrors := make(chan error) wgDone := make(chan bool) var wg sync.WaitGroup wg.Add(2) go func() { //... 业务逻辑 wg.Done() }() go func() { //... 业务逻辑 err &amp;hellip;"><link rel=stylesheet href=//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/fonts.css><link rel=stylesheet href=/css/diary.css></head><body class=post><header class=masthead><h1><a href=/>星河</a></h1><p class=tagline>醉后不知天在水，满船清梦压星河</p><nav class=menu><input id=menu-check type=checkbox hidden>
+<label id=menu-label for=menu-check class=unselectable hidden><span class="icon close-icon">✕</span>
+<span class="icon open-icon">☰</span>
+<span class=text>Menu</span></label><ul><li><a href=/>首页</a></li><li><a href=/shuoshuo>说说</a></li><li><a href=/categories/>分类</a></li><li><a href=/tags/>标签</a></li><li><a href=/about/>关于</a></li></ul></nav></header><article class=main><header class=title><h1>Golang 协程更好的进行错误处理</h1><h3>mingzaily
+/
+2022-06-02</h3><hr></header><h2 id=利用-channel-来传输多个-goroutine-中的-errors>利用 <code>channel</code> 来传输多个 goroutine 中的 errors</h2><p>Go 的经典哲学：不要通过共享内存来通信，而是通过通信来实现内存共享</p><pre><code class=language-golang>func main() {
 	cherrors := make(chan error)
 	wgDone := make(chan bool)
 
@@ -143,19 +43,11 @@ mingzaily
 func returnErr() error {
 	return errors.New(&quot;出错啦。。我是错误信息&quot;)
 }
-</code></pre>
-<h2 id="使用-syncerrgroup">使用 <code>sync/errgroup</code></h2>
-<p>使用官方提供的<code>golang.org/x/sync/errgroup</code>标准库</p>
-<pre><code class="language-golang">type Group
+</code></pre><h2 id=使用-syncerrgroup>使用 <code>sync/errgroup</code></h2><p>使用官方提供的<code>golang.org/x/sync/errgroup</code>标准库</p><pre><code class=language-golang>type Group
     func WithContext(ctx context.Context) (*Group, context.Context)
     func (g *Group) Go(f func() error)
     func (g *Group) Wait() error
-</code></pre>
-<ul>
-<li>Go：启动一个协程，在新的 goroutine 中调用给定的函数。</li>
-<li>Wait：等待协程结束，直到 Go 方法中的所有函数调用都返回，然后返回其中第一个非零错误（如果有错误的话）。</li>
-</ul>
-<pre><code class="language-golang">func main() {
+</code></pre><ul><li>Go：启动一个协程，在新的 goroutine 中调用给定的函数。</li><li>Wait：等待协程结束，直到 Go 方法中的所有函数调用都返回，然后返回其中第一个非零错误（如果有错误的话）。</li></ul><pre><code class=language-golang>func main() {
 	group := new(errgroup.Group)
 
 	nums := []int{-1, 0, 1}
@@ -182,47 +74,4 @@ func output(num int) (int, error) {
 	return num, nil
 }
 
-</code></pre>
-<p>每启动一个新的 goroutine 都直接使用 Group.Go 方法，在等待和错误处理上使用 Group.Wait 方法。</p>
-<p>这种方法进行错误处理的好处是不需要关注非业务逻辑的控制代码，比较简洁明了。</p>
-
-
-
-  <footer>
-  
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<script src="//cdn.jsdelivr.net/combine/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js,npm/@xiee/utils/js/load-highlight.js" defer></script>
-
-
-
-  
-  <hr>
-  <div class="copyright">© <a href="https://mingzaily.com">mingzaily</a> 2019-2024 | <a href="https://github.com/mingzaily">Github</a></div>
-  
-  </footer>
-  </article>
-  
-  </body>
-</html>
-
+</code></pre><p>每启动一个新的 goroutine 都直接使用 Group.Go 方法，在等待和错误处理上使用 Group.Wait 方法。</p><p>这种方法进行错误处理的好处是不需要关注非业务逻辑的控制代码，比较简洁明了。</p><footer><script src=//cdn.jsdelivr.net/combine/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js,npm/@xiee/utils/js/load-highlight.js defer></script><hr><div class=copyright>© <a href=https://mingzaily.com>mingzaily</a> 2019-2024 | <a href=https://github.com/mingzaily>Github</a></div></footer></article></body></html>

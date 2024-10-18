@@ -1,19 +1,94 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>Network on 星河</title>
-    <link>/tags/network/</link>
-    <description>Recent content in Network on 星河</description>
-    <generator>Hugo</generator>
-    <language>zh-CN</language>
-    <lastBuildDate>Fri, 18 Oct 2019 00:00:00 +0000</lastBuildDate>
-    <atom:link href="/tags/network/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>计算机网络</title>
-      <link>/post/2019/10/18/7/</link>
-      <pubDate>Fri, 18 Oct 2019 00:00:00 +0000</pubDate>
-      <guid>/post/2019/10/18/7/</guid>
-      <description>&lt;h2 id=&#34;网络基础&#34;&gt;网络基础&lt;/h2&gt;&#xA;&lt;h3 id=&#34;osi-模型&#34;&gt;OSI 模型&lt;/h3&gt;&#xA;&lt;h4 id=&#34;表格&#34;&gt;表格&lt;/h4&gt;&#xA;&lt;table&gt;&#xA;  &lt;thead&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;th&gt;概念层&lt;/th&gt;&#xA;          &lt;th&gt;数据单位&lt;/th&gt;&#xA;          &lt;th&gt;作用&lt;/th&gt;&#xA;          &lt;th&gt;设备&lt;/th&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/thead&gt;&#xA;  &lt;tbody&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;物理层&lt;/td&gt;&#xA;          &lt;td&gt;比特&lt;/td&gt;&#xA;          &lt;td&gt;提供光纤标准、传送数据的通路，传输比特流&lt;/td&gt;&#xA;          &lt;td&gt;网线等等&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;数据链路层&lt;/td&gt;&#xA;          &lt;td&gt;数据帧&lt;/td&gt;&#xA;          &lt;td&gt;帧定界和帧同步;顺序控制，指对帧的收发顺序的控制；差错检测和恢复；APR、RARP 协议&lt;/td&gt;&#xA;          &lt;td&gt;交互机、网桥&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;网络层&lt;/td&gt;&#xA;          &lt;td&gt;数据分组或数据包&lt;/td&gt;&#xA;          &lt;td&gt;两个主机系统之间提供连接和路径选择&lt;/td&gt;&#xA;          &lt;td&gt;路由器&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;传输层&lt;/td&gt;&#xA;          &lt;td&gt;报文段&lt;/td&gt;&#xA;          &lt;td&gt;定义传输协议和端口；分段传输，到达目的地址后重组&lt;/td&gt;&#xA;          &lt;td&gt;-&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;会话层&lt;/td&gt;&#xA;          &lt;td&gt;-&lt;/td&gt;&#xA;          &lt;td&gt;管理应用程序间的通信&lt;/td&gt;&#xA;          &lt;td&gt;-&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;表示层&lt;/td&gt;&#xA;          &lt;td&gt;-&lt;/td&gt;&#xA;          &lt;td&gt;把应用层提供的信息变换为能够共同理解的形式、保证各系统、应用可以读取&lt;/td&gt;&#xA;          &lt;td&gt;-&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;应用层&lt;/td&gt;&#xA;          &lt;td&gt;-&lt;/td&gt;&#xA;          &lt;td&gt;应用层协议，如 HTTP 协议&lt;/td&gt;&#xA;          &lt;td&gt;-&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/tbody&gt;&#xA;&lt;/table&gt;&#xA;&lt;h4 id=&#34;总结&#34;&gt;总结&lt;/h4&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;下面 4 层（物理层、数据链路层、网络层和传输层）主要提供数据传输和交换功能，即以节点到节点之间的通信为主；&lt;/li&gt;&#xA;&lt;li&gt;第 4 层(传输成 TCP/UDP)作为上下两部分的桥梁，是整个网络体系结构中最关键的部分；&lt;/li&gt;&#xA;&lt;li&gt;简言之，下 4 层主要完成通信子网的功能，上 3 层主要完成资源子网的功能。&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h3 id=&#34;tcpip-四层模型&#34;&gt;TCP/IP 四层模型&lt;/h3&gt;&#xA;&lt;p&gt;TCP/IP 又叫网际协议群，可以说是 OSI 模型的实现，强调在计算机上实现协议应该开发哪种程序&lt;/p&gt;&#xA;&lt;table&gt;&#xA;  &lt;thead&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;th&gt;概念层&lt;/th&gt;&#xA;          &lt;th&gt;TCP/IP 协议群&lt;/th&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/thead&gt;&#xA;  &lt;tbody&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;应用层&lt;/td&gt;&#xA;          &lt;td&gt;FTP、HTTP、Telnt&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;数据链路层&lt;/td&gt;&#xA;          &lt;td&gt;TCP、UDP&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;网络层&lt;/td&gt;&#xA;          &lt;td&gt;IP、ICMP、RIP、OSFF，ICMP，BGF&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;      &lt;tr&gt;&#xA;          &lt;td&gt;网络接口层/链路层&lt;/td&gt;&#xA;          &lt;td&gt;ISO、IEEE 标准&lt;/td&gt;&#xA;      &lt;/tr&gt;&#xA;  &lt;/tbody&gt;&#xA;&lt;/table&gt;&#xA;&lt;h2 id=&#34;tcp-三次握手四次挥手&#34;&gt;TCP 三次握手&amp;amp;四次挥手&lt;/h2&gt;&#xA;&lt;h3 id=&#34;报文格式&#34;&gt;报文格式&lt;/h3&gt;&#xA;&lt;p&gt;TCP Tags&lt;/p&gt;</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Network on 星河</title><link>/tags/network/</link><description>Recent content in Network on 星河</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Fri, 18 Oct 2019 00:00:00 +0000</lastBuildDate><atom:link href="/tags/network/index.xml" rel="self" type="application/rss+xml"/><item><title>计算机网络</title><link>/post/2019/10/18/7/</link><pubDate>Fri, 18 Oct 2019 00:00:00 +0000</pubDate><guid>/post/2019/10/18/7/</guid><description>&lt;h2 id="网络基础">网络基础&lt;/h2>
+&lt;h3 id="osi-模型">OSI 模型&lt;/h3>
+&lt;h4 id="表格">表格&lt;/h4>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>概念层&lt;/th>
+ &lt;th>数据单位&lt;/th>
+ &lt;th>作用&lt;/th>
+ &lt;th>设备&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>物理层&lt;/td>
+ &lt;td>比特&lt;/td>
+ &lt;td>提供光纤标准、传送数据的通路，传输比特流&lt;/td>
+ &lt;td>网线等等&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>数据链路层&lt;/td>
+ &lt;td>数据帧&lt;/td>
+ &lt;td>帧定界和帧同步;顺序控制，指对帧的收发顺序的控制；差错检测和恢复；APR、RARP 协议&lt;/td>
+ &lt;td>交互机、网桥&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>网络层&lt;/td>
+ &lt;td>数据分组或数据包&lt;/td>
+ &lt;td>两个主机系统之间提供连接和路径选择&lt;/td>
+ &lt;td>路由器&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>传输层&lt;/td>
+ &lt;td>报文段&lt;/td>
+ &lt;td>定义传输协议和端口；分段传输，到达目的地址后重组&lt;/td>
+ &lt;td>-&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>会话层&lt;/td>
+ &lt;td>-&lt;/td>
+ &lt;td>管理应用程序间的通信&lt;/td>
+ &lt;td>-&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>表示层&lt;/td>
+ &lt;td>-&lt;/td>
+ &lt;td>把应用层提供的信息变换为能够共同理解的形式、保证各系统、应用可以读取&lt;/td>
+ &lt;td>-&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>应用层&lt;/td>
+ &lt;td>-&lt;/td>
+ &lt;td>应用层协议，如 HTTP 协议&lt;/td>
+ &lt;td>-&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h4 id="总结">总结&lt;/h4>
+&lt;ul>
+&lt;li>下面 4 层（物理层、数据链路层、网络层和传输层）主要提供数据传输和交换功能，即以节点到节点之间的通信为主；&lt;/li>
+&lt;li>第 4 层(传输成 TCP/UDP)作为上下两部分的桥梁，是整个网络体系结构中最关键的部分；&lt;/li>
+&lt;li>简言之，下 4 层主要完成通信子网的功能，上 3 层主要完成资源子网的功能。&lt;/li>
+&lt;/ul>
+&lt;h3 id="tcpip-四层模型">TCP/IP 四层模型&lt;/h3>
+&lt;p>TCP/IP 又叫网际协议群，可以说是 OSI 模型的实现，强调在计算机上实现协议应该开发哪种程序&lt;/p>
+&lt;table>
+ &lt;thead>
+ &lt;tr>
+ &lt;th>概念层&lt;/th>
+ &lt;th>TCP/IP 协议群&lt;/th>
+ &lt;/tr>
+ &lt;/thead>
+ &lt;tbody>
+ &lt;tr>
+ &lt;td>应用层&lt;/td>
+ &lt;td>FTP、HTTP、Telnt&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>数据链路层&lt;/td>
+ &lt;td>TCP、UDP&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>网络层&lt;/td>
+ &lt;td>IP、ICMP、RIP、OSFF，ICMP，BGF&lt;/td>
+ &lt;/tr>
+ &lt;tr>
+ &lt;td>网络接口层/链路层&lt;/td>
+ &lt;td>ISO、IEEE 标准&lt;/td>
+ &lt;/tr>
+ &lt;/tbody>
+&lt;/table>
+&lt;h2 id="tcp-三次握手四次挥手">TCP 三次握手&amp;amp;四次挥手&lt;/h2>
+&lt;h3 id="报文格式">报文格式&lt;/h3>
+&lt;p>TCP Tags&lt;/p></description></item></channel></rss>

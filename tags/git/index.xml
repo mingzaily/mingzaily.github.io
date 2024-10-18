@@ -1,26 +1,56 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>Git on 星河</title>
-    <link>/tags/git/</link>
-    <description>Recent content in Git on 星河</description>
-    <generator>Hugo</generator>
-    <language>zh-CN</language>
-    <lastBuildDate>Wed, 20 Oct 2021 00:00:00 +0000</lastBuildDate>
-    <atom:link href="/tags/git/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Git相关配置</title>
-      <link>/post/2021/10/20/20/</link>
-      <pubDate>Wed, 20 Oct 2021 00:00:00 +0000</pubDate>
-      <guid>/post/2021/10/20/20/</guid>
-      <description>&lt;h4 id=&#34;用户名邮箱设置&#34;&gt;用户名邮箱设置&lt;/h4&gt;&#xA;&lt;p&gt;系统级别&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;git config --global user.name &amp;quot;xxx&amp;quot;&#xA;git config --global user.email &amp;quot;xxx@xxx.com&amp;quot;&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;仓库级别&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;git config --local user.name &amp;quot;xxx&amp;quot;&#xA;git config --local user.email &amp;quot;xxx@xxx.com&amp;quot;&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;h4 id=&#34;代理设置&#34;&gt;代理设置&lt;/h4&gt;&#xA;&lt;p&gt;添加代理&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;git config --local http.proxy &amp;quot;http://127.0.0.1:7890&amp;quot;&#xA;git config --local https.proxy &amp;quot;http://127.0.0.1:7890&amp;quot;&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;p&gt;删除代理&lt;/p&gt;&#xA;&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;git config --local --unset http.proxy&#xA;git config --local --unset https.proxy&#xA;&lt;/code&gt;&lt;/pre&gt;</description>
-    </item>
-    <item>
-      <title>Linux 安装 Git</title>
-      <link>/post/2021/06/10/16/</link>
-      <pubDate>Thu, 10 Jun 2021 17:40:00 +0000</pubDate>
-      <guid>/post/2021/06/10/16/</guid>
-      <description>&lt;h3 id=&#34;场景&#34;&gt;场景&lt;/h3&gt;&#xA;&lt;p&gt;一般来说linux安装通过&lt;code&gt;yum&lt;/code&gt;或者&lt;code&gt;apt-get&lt;/code&gt;命令安装即可，但是使用此类命令，git安装版本太低了，因此需要编译安装&lt;/p&gt;&#xA;&lt;h3 id=&#34;源码安装git&#34;&gt;源码安装Git&lt;/h3&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;查看&lt;code&gt;https://github.com/git/git/releases&lt;/code&gt;版本&lt;/p&gt;&#xA;&lt;/li&gt;&#xA;&lt;li&gt;&#xA;&lt;p&gt;选择需要下载的版本地址，比如&lt;code&gt;2.32.1&lt;/code&gt;，复制链接地址&lt;/p&gt;&#xA;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;&lt;a href=&#34;https://imgtu.com/i/2RSIHg&#34;&gt;&lt;img src=&#34;https://z3.ax1x.com/2021/06/10/2RSIHg.png&#34; alt=&#34;复制链接地址&#34;&gt;&lt;/a&gt;&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;下载并解压，安装所需依赖，编译&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;# 下载&#xA;wget https://github.com/git/git/archive/refs/tags/v2.32.0.tar.gz&#xA;# 解压&#xA;tar -zxvf v2.32.0.tar.gz&#xA;# 安装所需依赖（如果编译出现确实依赖，按此方法安装即可）&#xA;yum install curl-devel expat-devel gettext-devel openssl-devel zlib-devel gcc perl-ExtUtils-MakeMaker&#xA;# 编译&#xA;cd v2.32.0.tar.gz &amp;amp;&amp;amp; make prefix=/usr/local/git all&#xA;# 安装&#xA;make prefix=/usr/local/git install&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;设置环境变量&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;vim etc/profile&#xA;# 添加环境&#xA;export PATH=$PATH:/usr/local/git/bin&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;安装完成&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;# 查看安装的git版本，校验通过，安装成功&#xA;git version&#xA;&lt;/code&gt;&lt;/pre&gt;</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Git on 星河</title><link>/tags/git/</link><description>Recent content in Git on 星河</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Wed, 20 Oct 2021 00:00:00 +0000</lastBuildDate><atom:link href="/tags/git/index.xml" rel="self" type="application/rss+xml"/><item><title>Git相关配置</title><link>/post/2021/10/20/20/</link><pubDate>Wed, 20 Oct 2021 00:00:00 +0000</pubDate><guid>/post/2021/10/20/20/</guid><description>&lt;h4 id="用户名邮箱设置">用户名邮箱设置&lt;/h4>
+&lt;p>系统级别&lt;/p>
+&lt;pre>&lt;code class="language-shell">git config --global user.name &amp;quot;xxx&amp;quot;
+git config --global user.email &amp;quot;xxx@xxx.com&amp;quot;
+&lt;/code>&lt;/pre>
+&lt;p>仓库级别&lt;/p>
+&lt;pre>&lt;code class="language-shell">git config --local user.name &amp;quot;xxx&amp;quot;
+git config --local user.email &amp;quot;xxx@xxx.com&amp;quot;
+&lt;/code>&lt;/pre>
+&lt;h4 id="代理设置">代理设置&lt;/h4>
+&lt;p>添加代理&lt;/p>
+&lt;pre>&lt;code class="language-shell">git config --local http.proxy &amp;quot;http://127.0.0.1:7890&amp;quot;
+git config --local https.proxy &amp;quot;http://127.0.0.1:7890&amp;quot;
+&lt;/code>&lt;/pre>
+&lt;p>删除代理&lt;/p>
+&lt;pre>&lt;code class="language-shell">git config --local --unset http.proxy
+git config --local --unset https.proxy
+&lt;/code>&lt;/pre></description></item><item><title>Linux 安装 Git</title><link>/post/2021/06/10/16/</link><pubDate>Thu, 10 Jun 2021 17:40:00 +0000</pubDate><guid>/post/2021/06/10/16/</guid><description>&lt;h3 id="场景">场景&lt;/h3>
+&lt;p>一般来说linux安装通过&lt;code>yum&lt;/code>或者&lt;code>apt-get&lt;/code>命令安装即可，但是使用此类命令，git安装版本太低了，因此需要编译安装&lt;/p>
+&lt;h3 id="源码安装git">源码安装Git&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>查看&lt;code>https://github.com/git/git/releases&lt;/code>版本&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>选择需要下载的版本地址，比如&lt;code>2.32.1&lt;/code>，复制链接地址&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;p>&lt;a href="https://imgtu.com/i/2RSIHg">&lt;img src="https://z3.ax1x.com/2021/06/10/2RSIHg.png" alt="复制链接地址">&lt;/a>&lt;/p>
+&lt;ul>
+&lt;li>下载并解压，安装所需依赖，编译&lt;/li>
+&lt;/ul>
+&lt;pre>&lt;code class="language-shell"># 下载
+wget https://github.com/git/git/archive/refs/tags/v2.32.0.tar.gz
+# 解压
+tar -zxvf v2.32.0.tar.gz
+# 安装所需依赖（如果编译出现确实依赖，按此方法安装即可）
+yum install curl-devel expat-devel gettext-devel openssl-devel zlib-devel gcc perl-ExtUtils-MakeMaker
+# 编译
+cd v2.32.0.tar.gz &amp;amp;&amp;amp; make prefix=/usr/local/git all
+# 安装
+make prefix=/usr/local/git install
+&lt;/code>&lt;/pre>
+&lt;ul>
+&lt;li>设置环境变量&lt;/li>
+&lt;/ul>
+&lt;pre>&lt;code class="language-shell">vim etc/profile
+# 添加环境
+export PATH=$PATH:/usr/local/git/bin
+&lt;/code>&lt;/pre>
+&lt;ul>
+&lt;li>安装完成&lt;/li>
+&lt;/ul>
+&lt;pre>&lt;code class="language-shell"># 查看安装的git版本，校验通过，安装成功
+git version
+&lt;/code>&lt;/pre></description></item></channel></rss>
