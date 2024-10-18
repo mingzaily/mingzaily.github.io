@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>Golang Defer理解 - 星河</title>
+    <meta property="og:title" content="Golang Defer理解 - 星河">
+    
+    <meta name="twitter:card" content="summary">
+
+    
+    
+      
+    
+
+    
+      
+    
+
+    
+    
+    
+
+    
+
+    
+    
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/styles/github.min.css">
+
+
+
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    
+  </head>
+  <body class="post">
+    <header class="masthead">
+      <h1><a href="/">星河</a></h1>
+
+<p class="tagline">醉后不知天在水，满船清梦压星河</p>
+
+      <nav class="menu">
+  <input id="menu-check" type="checkbox" hidden/>
+  <label id="menu-label" for="menu-check" class="unselectable" hidden>
+    <span class="icon close-icon">✕</span>
+    <span class="icon open-icon">☰</span>
+    <span class="text">Menu</span>
+  </label>
+  <ul>
+  
+  
+  <li><a href="/">首页</a></li>
+  
+  <li><a href="/shuoshuo">说说</a></li>
+  
+  <li><a href="/categories/">分类</a></li>
+  
+  <li><a href="/tags/">标签</a></li>
+  
+  <li><a href="/about/">关于</a></li>
+  
+  
+  </ul>
+</nav>
+
+    </header>
+
+    <article class="main">
+      <header class="title">
+      
+<h1>Golang Defer理解</h1>
+
+
+
+<h3>
+
+mingzaily
+
+
+
+
+
+
+ / 
+2022-01-13
+</h3>
+
+<hr>
+
+
+      </header>
+
+
+
+
+
+<h3 id="结论">结论</h3>
+<ol>
+<li>多个defer的执行顺序为<code>先进后出</code></li>
+<li>匿名返回值是在<code>return</code>执行时被声明，有名返回值则是在函数声明的同时被声明，因此在<code>defer</code>语句中只能访问有名返回值，而不能直接访问匿名返回值</li>
+<li><code>return</code>其实应该包含前后两个步骤：第一步是给返回值赋值（若为有名返回值则直接赋值，若为匿名返回值则先声明再赋值）；第二步是调用<code>RET</code>返回指令并传入返回值，而<code>RET</code>则会检查<code>defer</code>是否存在，若存在就先逆序插播defer语句，最后RET携带返回值退出函数</li>
+<li>延迟函数的参数在 defer 语句出现时就已经确定下来了（defer声明时会先计算确定参数的值，defer推迟执行的仅是其函数体）</li>
+</ol>
+<h3 id="解释">解释</h3>
+<h5 id="结论1">结论1</h5>
+<pre><code class="language-golang">package main
+
+func main() {
+    for i := 0; i &lt; 4; i++ {
+        defer fmt.Print(i)
+    }
+
+    // Output:
+    // 3
+    // 2
+    // 1
+    // 0
+}
+</code></pre>
+<h5 id="结论2和结论3">结论2和结论3</h5>
+<pre><code class="language-golang">package main
+
+import (
+    &quot;fmt&quot;
+)
+
+func main() {
+    fmt.Println(a())
+
+    // Output:
+    // 1
+    // 2
+}
+
+// 无名返回值
+func a() int {
+    defer func() { i++ }()
+    return 1
+}
+
+// 有名返回值
+func a() (i int) {
+    defer func() { i++ }()
+    return 1
+}
+</code></pre>
+<h5 id="结论4">结论4</h5>
+<pre><code class="language-golang">package main
+
+import (
+    &quot;fmt&quot;
+)
+
+func main() {
+    a()
+    b()
+
+    // Output:
+    // 0
+    // enter: b
+    // in b
+    // leave: b
+}
+
+func a() {
+    i := 0
+    defer fmt.Println(i) // 调用时i已经确定为0
+    i++
+    return
+}
+
+func trace(s string) s {
+    fmt.Println(&quot;enter: &quot;, s)
+    return s
+}
+
+func un(s) {
+    fmt.Println(&quot;leave: &quot;, s)
+}
+
+func b() {
+    defer un(trace(&quot;b&quot;)) // defer声明时会先计算确定参数的值，即执行了trace()，defer推迟执行的仅是其函数体un()
+    fmt.Println(&quot;in b&quot;)
+}
+</code></pre>
+<h3 id="参考">参考</h3>
+<ol>
+<li><a href="https://draveness.me/golang/docs/part2-foundation/ch05-keyword/golang-defer/#53-defer">《Go语言设计与实现》</a></li>
+<li><a href="https://cloud.tencent.com/developer/article/1410243">Golang中defer、return、返回值之间执行顺序的坑</a></li>
+<li><a href="https://blog.csdn.net/huang_yong_peng/article/details/82950743">理解Golang中defer的使用</a></li>
+</ol>
+
+
+
+  <footer>
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="//cdn.jsdelivr.net/combine/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js,npm/@xiee/utils/js/load-highlight.js" defer></script>
+
+
+
+  
+  <hr>
+  <div class="copyright">© <a href="https://mingzaily.com">mingzaily</a> 2019-2024 | <a href="https://github.com/mingzaily">Github</a></div>
+  
+  </footer>
+  </article>
+  
+  </body>
+</html>
+
