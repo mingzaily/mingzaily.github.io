@@ -2,13 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>/categories/</loc>
-    <lastmod>2024-05-25T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>/</loc>
     <lastmod>2024-05-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>/post/</loc>
+    <loc>/posts/</loc>
+    <lastmod>2024-05-25T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>/categories/</loc>
     <lastmod>2024-05-25T00:00:00+00:00</lastmod>
   </url><url>
     <loc>/categories/%E6%96%B9%E6%A1%88%E8%AE%BE%E8%AE%A1/</loc>
@@ -29,10 +29,10 @@
     <loc>/post/2024/02/05/55/</loc>
     <lastmod>2024-02-05T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>/tags/</loc>
+    <loc>/tags/zsh/</loc>
     <lastmod>2024-02-05T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>/tags/zsh/</loc>
+    <loc>/tags/</loc>
     <lastmod>2024-02-05T00:00:00+00:00</lastmod>
   </url><url>
     <loc>/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/</loc>
